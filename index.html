@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="하이케어 건강나이 확인부터 메디콕 맞춤 영양 상담까지, 임직원 전용 안내 페이지입니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hi-Care × MEDICOK | 임직원 전용링크">
+<meta property="og:description" content="하이케어 건강나이 확인부터 메디콕 맞춤 영양 상담까지, 임직원 전용 안내 페이지입니다.">
 <title>Hi-Care × MEDICOK | 임직원 전용링크</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,18 +60,19 @@ header{display:flex;flex-direction:column;align-items:center;padding:22px 0 0;te
 h1{font-weight:900;line-height:1.15;letter-spacing:-1.5px;font-size:clamp(30px,9.2vw,50px);color:var(--navy);white-space:nowrap}
 h1 .l2{display:block;background:linear-gradient(90deg,#3a33c9,#5b5cf6 60%,#4a3fd8);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{margin-top:14px;font-size:clamp(17px,4.8vw,22px);font-weight:500;color:var(--navy);letter-spacing:-.4px}
-.qrbox{margin:18px auto 0;max-width:340px}
-.qrbox summary{list-style:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:9px 16px;border-radius:999px;
-  background:#fff;border:1px solid #d6d5f5;color:var(--violet);font-weight:700;font-size:14px;box-shadow:0 4px 12px rgba(74,63,216,.1)}
-.qrbox summary::-webkit-details-marker{display:none}
-.qrbox summary svg{width:18px;height:18px}
-.qrbox summary .chev{width:14px;height:14px;transition:transform .25s ease}
-.qrbox .close-t{display:none}
-.qrbox[open] .open-t{display:none}
-.qrbox[open] .close-t{display:inline}
-.qrbox[open] .chev{transform:rotate(180deg)}
-.qrbox summary:focus-visible{outline:3px solid var(--violet2);outline-offset:3px}
-.qrbox[open] .qr{animation:qrIn .3s ease}
+.qrbox{margin:18px auto 0;max-width:360px}
+.quick{display:flex;justify-content:center;gap:6px}
+.qbtn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:9px clamp(10px,3.2vw,15px);letter-spacing:-.3px;border-radius:999px;white-space:nowrap;
+  background:#fff;border:1px solid #d6d5f5;color:var(--violet);font:700 clamp(12px,3.6vw,14px) var(--sans);box-shadow:0 4px 12px rgba(74,63,216,.1)}
+.qbtn svg{width:17px;height:17px;flex:none}
+.qbtn .chev{width:14px;height:14px;transition:transform .25s ease}
+.qbtn .close-t{display:none}
+.qrbox.open .open-t{display:none}
+.qrbox.open .close-t{display:inline}
+.qrbox.open .chev{transform:rotate(180deg)}
+.qbtn:focus-visible{outline:3px solid var(--violet2);outline-offset:3px}
+.qbtn.coupon{background:linear-gradient(120deg,#4a3fd8,#6a5cf7);color:#fff;border-color:transparent}
+.qrbox.open .qr{animation:qrIn .3s ease}
 @keyframes qrIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .qr{display:flex;align-items:center;gap:16px;margin:12px auto 0;max-width:340px;padding:14px 18px 14px 14px;text-align:left;
   background:rgba(255,255,255,.85);border:1px solid #dcdcf7;border-radius:22px;box-shadow:0 10px 26px rgba(74,63,216,.12)}
@@ -182,8 +187,12 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
     <section class="hero">
       <h1>혹시 내 건강나이는<span class="l2">몇 살일까?</span></h1>
       <p class="sub">지금 확인하고, 맞춤 건강관리까지</p>
-      <details class="qrbox">
-        <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg><span class="open-t">QR코드 보기</span><span class="close-t">QR코드 닫기</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="qrbox" id="qrbox">
+        <div class="quick">
+          <button type="button" class="qbtn" id="qrToggle" aria-expanded="false" aria-controls="qrPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg><span class="open-t">QR코드 보기</span><span class="close-t">QR코드 닫기</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          <a class="qbtn coupon" href="https://www.medicok.co.kr/MyPage/CouponHistory.aspx" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M14 7v10" stroke-dasharray="2 2"/></svg><span>로그인 후 쿠폰 등록하기</span></a>
+        </div>
+        <div id="qrPanel" hidden>
         <div class="qr">
           <div class="qr-frame"><img src="data:image/png;base64,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" alt="내 건강나이 확인 페이지 QR코드" width="220" height="220"></div>
           <div class="qr-txt">
@@ -191,7 +200,8 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
             <p>휴대폰 카메라로 비추면 건강나이 확인 페이지로 이동해요</p>
           </div>
         </div>
-      </details>
+        </div>
+      </div>
       <div class="hero-cta">
         <a class="cta primary hot" href="https://hicare.tobecon.io/p/886d60c6" target="_blank" rel="noopener">
         <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 2.5h6v3H9z"/><path d="M9 17v-3M12 17v-5M15 17v-7"/></svg></span>
@@ -245,5 +255,9 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
     </footer>
   </div>
 </main>
+<script>
+(function(){var box=document.getElementById('qrbox'),b=document.getElementById('qrToggle'),p=document.getElementById('qrPanel');
+b.addEventListener('click',function(){var o=p.hidden;p.hidden=!o;box.classList.toggle('open',o);b.setAttribute('aria-expanded',o);});})();
+</script>
 </body>
 </html>
