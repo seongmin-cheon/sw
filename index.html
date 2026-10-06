@@ -126,10 +126,6 @@ h1 .l2{display:block;background:linear-gradient(90deg,#3a33c9,#5b5cf6 60%,#4a3fd
 .cta.primary p{color:#e4e2ff}
 .cta.primary .go{background:#fff;color:var(--violet)}
 
-.cta.primary.pack{background:linear-gradient(120deg,#1c1f5e 0%,#2f2a9e 55%,#4a3fd8 100%)}
-.cta.pack .flag{background:#ff8a00;box-shadow:0 6px 14px rgba(255,138,0,.4);animation-delay:.5s}
-.cta.pack .flag::after{border-top-color:#ff8a00}
-.cta.pack::before{animation-delay:-.8s,-.45s}
 .cta.guide .icon{background:#e3ecff}
 .cta.guide .tag{color:var(--blue)}
 .cta.guide .go{background:#e3ecff;color:var(--blue)}
@@ -182,6 +178,25 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
 @media (max-width:390px){.cta{grid-template-columns:40px 1fr auto;gap:9px;padding:14px 11px}.icon{border-radius:12px}.go{width:28px;height:28px}.cta h2{letter-spacing:-1px}.cta:not(.primary) h2{font-size:clamp(15px,4.6vw,18px)}}
 @media (min-width:521px){body{padding:24px 0}.page{border-radius:28px;box-shadow:0 20px 60px rgba(40,36,120,.15)}}
 @media (prefers-reduced-motion:reduce){*:not(.flag):not(.hot){transition:none!important;animation:none!important}}
+
+/* 진입 팝업 */
+.pop-dim{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(20,22,60,.55);backdrop-filter:blur(3px);animation:popFade .25s ease}
+.pop-dim[hidden]{display:none}
+.pop{position:relative;width:100%;max-width:360px;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 24px 60px rgba(20,22,80,.35);animation:popUp .3s ease}
+.pop-hd{padding:26px 22px 20px;text-align:center;color:#fff;background:linear-gradient(120deg,#1c1f5e 0%,#2f2a9e 55%,#4a3fd8 100%)}
+.pop-badge{display:inline-block;padding:5px 12px;border-radius:999px;background:#ff8a00;font-size:12px;font-weight:700;letter-spacing:.02em}
+.pop-hd h3{margin-top:12px;font-size:21px;font-weight:900;line-height:1.35;letter-spacing:-.5px}
+.pop-hl{margin-bottom:14px;padding:14px;border-radius:14px;background:linear-gradient(135deg,#f1efff,#e6e3ff);border:1.5px solid #c9c3fa;color:var(--navy);font-size:19px;font-weight:800;line-height:1.45;letter-spacing:-.3px}
+.pop-hl b{color:#ff7a00;font-weight:900}
+.pop-bd{padding:20px 22px 6px;text-align:center}
+.pop-bd p{font-size:15px;line-height:1.6;color:var(--text)}
+.pop-bd strong{color:var(--violet)}
+.pop-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px 18px}
+.pop-chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer}
+.pop-chk input{width:17px;height:17px;accent-color:var(--violet)}
+.pop-close{border:0;border-radius:12px;padding:10px 20px;font:700 14px var(--sans);color:#fff;background:var(--navy);cursor:pointer}
+@keyframes popFade{from{opacity:0}to{opacity:1}}
+@keyframes popUp{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -216,12 +231,6 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
         </div>
       </div>
       <div class="hero-cta">
-        <a class="cta primary hot pack" href="https://www.medicok.co.kr/Survey/PackageProduct.aspx?promotionId=&amp;counselorId=smcheon" target="_blank" rel="noopener">
-        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/><path d="M7.5 5.2l9 4.6"/></svg></span>
-        <span class="flag">유선 상담 없이 간편하게 주문하기!</span>
-        <div><span class="tag">✓ 셀프 간편 주문</span><h2>간편팩 바로 주문하기</h2><p>내 상황에 맞게 조합된 영양팩</p></div>
-        <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg></span>
-      </a>
         <a class="cta primary hot" href="https://hicare.tobecon.io/p/886d60c6" target="_blank" rel="noopener">
         <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 2.5h6v3H9z"/><path d="M9 17v-3M12 17v-5M15 17v-7"/></svg></span>
         <span class="flag">무료 건강분석 + 전문영양상담 받기!</span>
@@ -267,6 +276,37 @@ footer .en{font-size:11px;letter-spacing:.3em;color:#9a9dc0;margin-top:8px}
 <script>
 (function(){var box=document.getElementById('qrbox'),b=document.getElementById('qrToggle'),p=document.getElementById('qrPanel');
 b.addEventListener('click',function(){var o=p.hidden;p.hidden=!o;box.classList.toggle('open',o);b.setAttribute('aria-expanded',o);});})();
+</script>
+<div class="pop-dim" id="introPop" hidden role="dialog" aria-modal="true" aria-labelledby="popTitle">
+  <div class="pop">
+    <div class="pop-hd">
+      <span class="pop-badge">SPECIAL BENEFIT</span>
+      <h3 id="popTitle">임직원 전용링크</h3>
+    </div>
+    <div class="pop-bd">
+      <div class="pop-hl">장기구독 시 <b>상품권</b> 등<br>다양한 혜택 제공!!</div>
+      <p><strong>6개월 이상</strong> 꾸준히 건강관리하고<br>혜택까지 함께 받아가세요!</p>
+    </div>
+    <div class="pop-ft">
+      <label class="pop-chk"><input type="checkbox" id="popToday">오늘 하루 보지 않기</label>
+      <button type="button" class="pop-close" id="popClose">닫기</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='medicokPopHideUntil',pop=document.getElementById('introPop');
+  function today(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  var hidden=null;try{hidden=localStorage.getItem(KEY);}catch(e){}
+  if(hidden!==today()){pop.hidden=false;}
+  function close(){
+    if(document.getElementById('popToday').checked){try{localStorage.setItem(KEY,today());}catch(e){}}
+    pop.hidden=true;
+  }
+  document.getElementById('popClose').addEventListener('click',close);
+  pop.addEventListener('click',function(e){if(e.target===pop)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!pop.hidden)close();});
+})();
 </script>
 </body>
 </html>
