@@ -155,9 +155,87 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
 }
 @media (max-width:420px){#bFirst,#bFull{display:none}}
 @media (max-height:520px){.vol-title{display:none}.controls{margin-top:6px;padding:3px 10px}.controls button{width:28px;height:28px}main{padding:6px 12px}.hint{display:none}}
+
+/* ═════════ 상아탑 서고 (첫 화면) ═════════ */
+#hall{position:fixed;inset:0;z-index:60;overflow:hidden auto;color:#f3e8d2;background:#0b1028;
+  transition:opacity .9s ease,filter .9s ease;font-family:'Nanum Myeongjo',serif}
+#hall.out{opacity:0;filter:blur(6px) brightness(1.3);pointer-events:none}
+#hall.gone{display:none}
+.h-bg{position:fixed;inset:-3%;background:url(books/hall_bg.jpg) 58% center/cover no-repeat;animation:kb 40s ease-in-out infinite alternate;pointer-events:none}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.07) translate(-1%,-1%)}}
+.h-shade{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(8,12,34,.62),rgba(8,12,34,.25) 70%),linear-gradient(180deg,rgba(6,9,26,.55),rgba(6,9,26,.1) 35%,rgba(6,9,26,.65))}
+#motes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.h-inner{position:relative;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 16px 3vh;gap:2.2vh}
+#hall.again .h-inner *{animation-delay:0s!important;animation-duration:.6s!important}
+.h-eyebrow{font-family:Georgia,serif;font-size:12px;letter-spacing:.45em;color:#d9bd7f;text-shadow:0 1px 6px rgba(0,0,0,.8);text-transform:uppercase;opacity:0;animation:rise 1.4s .2s forwards}
+.h-title{font-size:clamp(46px,8vw,92px);font-weight:800;letter-spacing:.12em;line-height:1;margin-top:-1vh;
+  background:linear-gradient(180deg,#fff3cf 0%,#e9c77a 50%,#b88a3c 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.7)) drop-shadow(0 0 22px rgba(255,214,140,.35));opacity:0;animation:rise 1.6s .4s forwards}
+.h-sub{font-size:clamp(14px,1.6vw,18px);letter-spacing:.6em;color:#e8d6ad;text-shadow:0 1px 8px rgba(0,0,0,.9);margin-top:-1.4vh;opacity:0;animation:rise 1.6s .7s forwards}
+.h-orn{width:min(320px,70vw);height:14px;opacity:0;animation:rise 1.4s 1s forwards;
+  background:linear-gradient(90deg,transparent,#d9bd7f 30%,transparent 50%,#d9bd7f 70%,transparent) center/100% 1px no-repeat}
+.h-orn::after{content:"✦";display:block;text-align:center;color:#f1d58f;font-size:12px;line-height:14px}
+.h-epi{text-align:center;font-size:clamp(14px,1.5vw,16px);line-height:1.8;color:#f3e8d2;text-shadow:0 1px 10px rgba(0,0,0,.95),0 0 2px rgba(0,0,0,.8)}
+.h-epi span{display:block;opacity:0;animation:rise 1.8s forwards}
+.h-epi small{display:block;margin-top:6px;font-size:12px;letter-spacing:.3em;color:#d9bd7f;opacity:0;animation:rise 1.5s 3.6s forwards}
+@keyframes rise{from{opacity:0;transform:translateY(10px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+
+.h-niche{position:relative;padding:76px 26px 16px;border-radius:50% 50% 6px 6px/72px 72px 6px 6px;opacity:0;animation:rise 1.6s 2.6s forwards;
+  background:linear-gradient(180deg,rgba(14,20,52,.55),rgba(8,12,34,.78));
+  box-shadow:inset 0 0 0 1px rgba(217,189,127,.55),inset 0 0 0 7px rgba(255,255,255,.03),inset 0 0 0 8px rgba(217,189,127,.25),inset 0 18px 40px rgba(0,0,0,.35),0 20px 60px rgba(0,0,0,.5);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.h-shelf{--bw:30px;--gap:6px;--per:10;display:flex;flex-wrap:wrap;gap:0 var(--gap);width:calc(var(--per)*(var(--bw) + var(--gap)) - var(--gap));
+  background:repeating-linear-gradient(180deg,transparent 0 102px,#6b4a26 102px 105px,#b08953 105px 107px,rgba(0,0,0,.4) 107px 113px,transparent 113px 118px)}
+.h-book{position:relative;width:var(--bw);height:90px;margin:12px 0 16px;align-self:flex-end;border-radius:2px 2px 1px 1px}
+.h-book.empty{border:1px dashed rgba(217,189,127,.22);background:rgba(255,255,255,.02)}
+.h-book.has{cursor:pointer;background:linear-gradient(90deg,rgba(0,0,0,.4),rgba(255,255,255,.14) 25%,rgba(255,255,255,.04) 50%,rgba(0,0,0,.35)),var(--c);
+  box-shadow:0 0 0 1px rgba(60,30,10,.3),0 0 18px rgba(255,214,140,.55);transition:transform .35s cubic-bezier(.3,1.5,.5,1),box-shadow .35s;
+  animation:glow 3.2s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 0 1px rgba(60,30,10,.3),0 0 10px rgba(255,214,140,.35)}to{box-shadow:0 0 0 1px rgba(60,30,10,.3),0 0 26px rgba(255,214,140,.8)}}
+.h-book.has::before,.h-book.has::after{content:"";position:absolute;left:3px;right:3px;height:4px;border-top:1px solid #e3c47d;border-bottom:1px solid #e3c47d;opacity:.85}
+.h-book.has::before{top:8px}.h-book.has::after{bottom:8px}
+.h-book .n{position:absolute;top:15px;left:0;right:0;text-align:center;font-size:10px;font-weight:800;color:#e9cf8f}
+.h-book .t{position:absolute;top:29px;bottom:13px;left:0;right:0;writing-mode:vertical-rl;text-orientation:upright;display:flex;align-items:center;justify-content:center;font-size:8.5px;color:#f5e6c2;white-space:nowrap;overflow:hidden;line-height:1}
+.h-book.has:hover,.h-book.has.sel{transform:translateY(-10px)}
+.h-pick{position:relative;display:flex;align-items:center;gap:16px;min-height:96px;padding:12px 18px;border-radius:6px;opacity:0;animation:rise 1.4s 3.1s forwards;
+  background:rgba(8,12,34,.62);box-shadow:inset 0 0 0 1px rgba(217,189,127,.35),0 10px 30px rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.h-pick img{width:56px;height:84px;object-fit:cover;border-radius:2px;box-shadow:0 6px 16px rgba(60,40,15,.35)}
+.h-pick small{display:block;font-size:11px;letter-spacing:.25em;color:#d9bd7f}
+.h-pick b{display:block;font-size:17px;margin:4px 0 10px;color:#f7ecd4}
+.h-pick .btns{display:flex;gap:8px;flex-wrap:wrap}
+.h-pick button{font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:7px 14px;border-radius:20px;color:#fffaf0;background:linear-gradient(180deg,#a7803d,#7a5a24);box-shadow:0 2px 6px rgba(90,60,20,.3)}
+.h-pick button.ghost{background:none;color:#e8d6ad;box-shadow:inset 0 0 0 1px rgba(217,189,127,.5)}
+.h-pick button:hover{filter:brightness(1.08)}
+.h-hint{font-family:'Noto Sans KR',sans-serif;font-size:12px;color:#d9bd7f;text-shadow:0 1px 6px #000;letter-spacing:.1em;opacity:0;animation:rise 1.2s 3.4s forwards}
+.flyer{position:fixed;z-index:70;border-radius:3px;box-shadow:0 30px 80px rgba(60,40,15,.5);transition:all 1s cubic-bezier(.5,0,.2,1);pointer-events:none;object-fit:cover}
+@media (max-width:640px){.h-shelf{--per:5;--bw:34px;--gap:8px}.h-niche{padding:70px 16px 12px}.h-epi{line-height:1.9}}
+@media (max-height:700px) and (min-width:641px){.h-epi{display:none}}
+@media (prefers-reduced-motion:reduce){#hall *{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
 </head>
 <body>
+<section id="hall" aria-label="서고">
+  <div class="h-bg"></div><div class="h-shade"></div>
+  <canvas id="motes"></canvas>
+  <div class="h-inner">
+    <div class="h-eyebrow">The War of Genesis Apocrypha</div>
+    <h1 class="h-title" id="hTitle">창세비록</h1>
+    <div class="h-sub" id="hSub">뫼비우스의 서</div>
+    <div class="h-orn"></div>
+    <div class="h-epi">
+      <span style="animation-delay:1.3s">별의 바다를 건너온 자들이</span>
+      <span style="animation-delay:1.75s">안타리아에 내려섰을 때,</span>
+      <span style="animation-delay:2.2s">신화는 아직 시작되지 않았다.</span>
+      <span style="animation-delay:2.65s">그러나 그들이 남긴 선택은</span>
+      <span style="animation-delay:3.1s">훗날 한 세계의 운명이 되었다.</span>
+      <small>태고의 비문</small>
+    </div>
+    <div class="h-niche"><div class="h-shelf" id="hShelf"></div></div>
+    <div class="h-pick" id="hPick"></div>
+    <div class="h-hint">빛나는 책을 골라 펼치세요</div>
+  </div>
+</section>
 <aside id="side">
   <div class="handle">책장 ▸</div>
   <div class="brand"><h1 id="sName">창세비록</h1><p id="sSub">뫼비우스의 서</p></div>
@@ -180,6 +258,7 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
   </div>
   <div class="controls">
     <button class="menu-btn" id="bMenu" title="책장"><svg viewBox="0 0 24 24"><path d="M4 4v16M9 4v16M14 5l4 15M3 20h18"/></svg></button>
+    <button id="bHall" title="서고로"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M19 21V10M9 21v-6h6v6M3 10l9-6 9 6"/></svg></button>
     <button id="bFirst" title="처음"><svg viewBox="0 0 24 24"><path d="M18 6l-6 6 6 6M7 6v12"/></svg></button>
     <button id="bPrev" title="이전"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
     <input type="range" id="slider" min="0" max="1" value="0">
@@ -313,7 +392,7 @@ async function goToPage(p,instant){
 
 /* ── 책장 넘기기 ── */
 async function flip(dir){
-  if(S.busy||!S.vol)return;
+  if(S.busy||!S.vol||S.inHall)return;
   const ns=S.spread+dir;if(ns<0||ns>maxSpread())return;
   S.busy=true;
   const [cl,cr]=pagesOf(S.spread),[nl,nr]=pagesOf(ns);
@@ -377,6 +456,7 @@ document.querySelector('.handle').onclick=()=>document.body.classList.toggle('dr
 $('scrim').onclick=()=>document.body.classList.remove('drawer');
 document.body.addEventListener('click',e=>{if(document.body.classList.contains('drawer')&&!e.target.closest('aside')&&!e.target.closest('#bMenu'))document.body.classList.remove('drawer')});
 addEventListener('keydown',e=>{
+  if(S.inHall)return;
   if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();flip(1)}
   else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();flip(-1)}
   else if(e.key==='Home')goToPage(1);else if(e.key==='End')goToPage(S.N);
@@ -389,13 +469,80 @@ addEventListener('resize',relayout);addEventListener('orientationchange',relayou
 document.addEventListener('fullscreenchange',relayout);
 if(window.ResizeObserver)new ResizeObserver(relayout).observe($('stage'));
 
+
+/* ═════════ 상아탑 서고 ═════════ */
+S.inHall=true;
+function hallBuild(){
+  const c=S.cfg,sh=$('hShelf');sh.innerHTML='';
+  $('hTitle').textContent=c.series;$('hSub').textContent=c.subtitle||'';
+  for(let n=1;n<=(c.totalVolumes||20);n++){
+    const v=c.volumes.find(x=>x.no===n),el=document.createElement('div');
+    if(v){el.className='h-book has';el.dataset.no=n;el.style.setProperty('--c',v.color||LEATHER[(n-1)%LEATHER.length]);
+      el.innerHTML=`<div class="n">${n}</div><div class="t">${v.spine||v.title}</div>`;
+      el.onmouseenter=()=>hallSelect(n);el.onclick=()=>{hallSelect(n);enterBook(n,el)}}
+    else el.className='h-book empty';
+    sh.appendChild(el);
+  }
+  const last=store.get('lastVol');hallSelect(c.volumes.some(v=>v.no===last)?last:c.volumes[c.volumes.length-1].no);
+}
+function hallSelect(no){
+  const v=S.cfg.volumes.find(x=>x.no===no);if(!v)return;
+  document.querySelectorAll('.h-book.has').forEach(b=>b.classList.toggle('sel',+b.dataset.no===no));
+  const pos=store.get('pos_'+no);
+  $('hPick').innerHTML=(v.cover?`<img src="${v.cover}" alt="">`:'')+`<div><small>제 ${no} 권</small><b>${v.title}</b><div class="btns">`+
+    (pos&&pos>1?`<button data-go="${pos}">이어 읽기 · ${pos}쪽</button><button class="ghost" data-go="1">처음부터</button>`:`<button data-go="1">펼치기</button>`)+`</div></div>`;
+  $('hPick').querySelectorAll('button').forEach(b=>b.onclick=()=>enterBook(no,document.querySelector(`.h-book[data-no="${no}"]`),+b.dataset.go));
+}
+function enterBook(no,from,page){
+  if(page)store.set('pos_'+no,page);
+  const v=S.cfg.volumes.find(x=>x.no===no),hall=$('hall');
+  if(v.cover&&from){
+    const r=from.getBoundingClientRect(),f=document.createElement('img');f.className='flyer';f.src=v.cover;
+    Object.assign(f.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',opacity:1});
+    document.body.appendChild(f);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{const h=Math.min(innerHeight*.7,560),w=h*.667;
+      Object.assign(f.style,{left:(innerWidth-w)/2+'px',top:(innerHeight-h)/2+'px',width:w+'px',height:h+'px'})}));
+    setTimeout(()=>{f.style.opacity=0;f.style.transform='scale(1.15)'},1000);setTimeout(()=>f.remove(),2000);
+  }
+  setTimeout(()=>{hall.classList.add('out');S.inHall=false;openVolume(no)},700);
+  setTimeout(()=>hall.classList.add('gone'),1700);
+}
+function backToHall(){
+  const hall=$('hall');document.body.classList.remove('drawer');
+  if(document.fullscreenElement)document.exitFullscreen();
+  if(S.vol)hallSelect(S.vol.no);
+  hall.classList.add('again');hall.classList.remove('gone');requestAnimationFrame(()=>hall.classList.remove('out'));S.inHall=true;
+}
+/* 떠다니는 빛가루 */
+(function motes(){
+  const cv=$('motes'),cx=cv.getContext('2d');let W,H,P=[];
+  const size=()=>{const d=Math.min(devicePixelRatio||1,2);W=cv.width=innerWidth*d;H=cv.height=innerHeight*d;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px'};
+  size();addEventListener('resize',size);
+  const N=innerWidth<640?36:70;
+  for(let i=0;i<N;i++)P.push({x:Math.random(),y:Math.random(),r:.6+Math.random()*1.8,s:.00015+Math.random()*.0004,ph:Math.random()*6.28,w:.0003+Math.random()*.0006});
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function tick(t){
+    if(!$('hall').classList.contains('gone')){
+      cx.clearRect(0,0,W,H);
+      for(const p of P){
+        if(!reduce){p.y-=p.s;p.x+=Math.sin(t*p.w+p.ph)*.0004;if(p.y<-.02){p.y=1.02;p.x=Math.random()}}
+        const a=.35+.45*Math.sin(t*.0015+p.ph*3),R=p.r*(devicePixelRatio>1?2:1.2);
+        const g=cx.createRadialGradient(p.x*W,p.y*H,0,p.x*W,p.y*H,R*4);
+        g.addColorStop(0,`rgba(255,236,180,${a})`);g.addColorStop(1,'rgba(255,236,180,0)');
+        cx.fillStyle=g;cx.beginPath();cx.arc(p.x*W,p.y*H,R*4,0,6.283);cx.fill();
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
 /* ── 시작 ── */
 (async()=>{
   try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;S.cfg=await r.json()}catch(e){S.cfg=FALLBACK}
   S.cfg.volumes.sort((a,b)=>a.no-b.no);
-  buildShelf();layout(true);
-  const last=store.get('lastVol');
-  openVolume(S.cfg.volumes.some(v=>v.no===last)?last:S.cfg.volumes[0].no);
+  buildShelf();layout(true);hallBuild();
+  $('bHall').onclick=backToHall;
 })();
 </script>
 </body>
