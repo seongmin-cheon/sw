@@ -25,9 +25,17 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 aside{position:fixed;left:0;top:0;bottom:0;width:var(--side);overflow-y:auto;overflow-x:hidden;padding:22px 30px 28px 18px;transform:translateX(calc(-100% + 16px));transition:transform .4s cubic-bezier(.3,.8,.3,1);
   background:linear-gradient(90deg,var(--wood3),var(--wood2) 8%,var(--wood2) 92%,#1d0f06);
   box-shadow:inset -6px 0 14px rgba(0,0,0,.55),4px 0 18px rgba(0,0,0,.5);z-index:20}
-aside:hover,body.drawer aside{transform:none}
+body.drawer aside{transform:none;box-shadow:inset -6px 0 14px rgba(0,0,0,.55),12px 0 40px rgba(0,0,0,.7)}
+@media (hover:hover){aside:hover{transform:none;box-shadow:inset -6px 0 14px rgba(0,0,0,.55),12px 0 40px rgba(0,0,0,.7)}aside:hover .handle{opacity:0}aside:hover~.scrim{opacity:1}}
+.scrim{position:fixed;inset:0;z-index:15;background:radial-gradient(ellipse at 30% 50%,rgba(12,7,3,.35),rgba(12,7,3,.6));opacity:0;pointer-events:none;transition:opacity .4s ease}
+body.drawer .scrim{opacity:1;pointer-events:auto}
+.cur{position:relative;display:flex;gap:12px;align-items:center;margin:26px 2px 0;padding:10px;border-radius:4px;background:rgba(0,0,0,.25);border:1px solid rgba(216,180,106,.15)}
+.cur img{width:58px;height:87px;object-fit:cover;border-radius:2px;box-shadow:0 4px 10px rgba(0,0,0,.6);flex:none}
+.cur small{display:block;font-size:11px;letter-spacing:.2em;color:var(--gold-dim);margin-bottom:4px}
+.cur b{font-size:13px;line-height:1.45;color:var(--ink);font-weight:700}
 .handle{position:absolute;right:0;top:0;bottom:0;width:16px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:11px;letter-spacing:.5em;color:var(--gold);background:linear-gradient(90deg,#3a2112,#24140a);border-left:1px solid rgba(216,180,106,.25);transition:opacity .3s;z-index:2}
-aside:hover .handle,body.drawer .handle{opacity:0}
+body.drawer .handle{opacity:0}
+.handle{cursor:pointer}
 aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
   background:repeating-linear-gradient(92deg,transparent 0 9px,rgba(0,0,0,.35) 9px 10px,transparent 10px 23px,rgba(255,220,170,.08) 23px 24px)}
 .brand{position:relative;text-align:center;margin-bottom:16px}
@@ -57,8 +65,8 @@ aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.
 .spine .no{position:absolute;top:20px;left:0;right:0;text-align:center;font-size:11px;font-weight:800;color:var(--gold)}
 .spine .t{position:absolute;top:36px;bottom:20px;left:0;right:0;writing-mode:vertical-rl;text-orientation:upright;
   display:flex;align-items:center;justify-content:center;font-size:var(--fs,11px);line-height:1;color:#f2dfb4;overflow:hidden;white-space:nowrap}
-.spine.book:hover{transform:translateY(-8px);filter:brightness(1.12)}
-.spine.book.active{transform:translateY(-16px);filter:brightness(1.18) drop-shadow(0 0 8px rgba(216,180,106,.55))}
+.spine.book:hover{transform:translateY(-4px);filter:brightness(1.12)}
+.spine.book.active{transform:translateY(-6px);filter:brightness(1.18) drop-shadow(0 0 8px rgba(216,180,106,.55))}
 .spine .tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) scale(.9);opacity:0;pointer-events:none;
   width:120px;transition:.25s;z-index:5}
 .spine .tip img{width:100%;display:block;border-radius:2px;box-shadow:0 8px 20px rgba(0,0,0,.8)}
@@ -137,7 +145,6 @@ main{position:relative;height:100%;display:flex;flex-direction:column;align-item
   aside:hover{transform:translateX(-102%)}
   .handle{display:none}
   body.drawer aside{transform:none}
-  body.drawer::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:15}
   main{padding:12px 16px 10px}
   .menu-btn{display:grid}
   .hint{display:none}
@@ -155,8 +162,10 @@ main{position:relative;height:100%;display:flex;flex-direction:column;align-item
   <div class="brand"><h1 id="sName">창세비록</h1><p id="sSub">뫼비우스의 서</p></div>
   <div class="progress"><span>연재</span><div class="bar"><i id="pBar"></i></div><span><b id="pNow">0</b> / <span id="pAll">20</span>권</span></div>
   <div class="cabinet" id="cabinet"></div>
+  <div class="cur" id="cur"><img id="curCover" alt=""><div><small id="curNo"></small><b id="curTitle"></b></div></div>
   <div class="side-foot">책등을 누르면 그 권이 펼쳐집니다</div>
 </aside>
+<div class="scrim" id="scrim"></div>
 
 <main>
   <div class="vol-title"><small id="vNo"></small><strong id="vTitle"></strong></div>
@@ -212,7 +221,7 @@ function buildShelf(){
       if(v){
         el.className='spine book';el.dataset.no=n;
         el.style.setProperty('--c',v.color||LEATHER[(n-1)%LEATHER.length]);
-        el.innerHTML=`<div class="no">${n}</div><div class="t" style="--fs:${Math.min(11,Math.max(7,(h-60)/[...(v.spine||v.title)].length)).toFixed(1)}px">${v.spine||v.title}</div>`+(v.cover?`<div class="tip"><img src="${v.cover}" alt=""></div>`:'');
+        el.innerHTML=`<div class="no">${n}</div><div class="t" style="--fs:${Math.min(11,Math.max(7,(h-60)/[...(v.spine||v.title)].length)).toFixed(1)}px">${v.spine||v.title}</div>`;
         el.title=`${n}권 · ${v.title}`;
         el.onclick=()=>{openVolume(n);document.body.classList.remove('drawer')};
       }else{el.className='spine empty';el.innerHTML=`<span>${n}</span>`}
@@ -227,6 +236,7 @@ async function openVolume(no){
   const v=S.cfg.volumes.find(x=>x.no===no);if(!v)return;
   const gen=++S.gen;
   document.querySelectorAll('.spine.book').forEach(s=>s.classList.toggle('active',+s.dataset.no===no));
+  $('curCover').src=v.cover||'';$('curCover').style.display=v.cover?'':'none';$('curNo').textContent=`읽는 중 · 제 ${no} 권`;$('curTitle').textContent=v.title;
   $('vNo').textContent=`제 ${no} 권`;$('vTitle').textContent=v.title;document.title=`${S.cfg.series} ${no}권 — ${v.title}`;
   const L=$('loader');L.classList.remove('hide');$('lCover').src=v.cover||'';$('lCover').style.display=v.cover?'':'none';
   $('lMsg').textContent='책을 펼치는 중…';$('lBar').style.width='5%';
@@ -356,6 +366,8 @@ $('slider').onchange=e=>{const s=+e.target.value;goToPage(pagesOf(s).filter(Bool
 $('bMode').onclick=()=>{S.forceSingle=!S.single;layout()};
 $('bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()};
 $('bMenu').onclick=()=>document.body.classList.toggle('drawer');
+document.querySelector('.handle').onclick=()=>document.body.classList.toggle('drawer');
+$('scrim').onclick=()=>document.body.classList.remove('drawer');
 document.body.addEventListener('click',e=>{if(document.body.classList.contains('drawer')&&!e.target.closest('aside')&&!e.target.closest('#bMenu'))document.body.classList.remove('drawer')});
 addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();flip(1)}
