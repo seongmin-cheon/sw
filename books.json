@@ -1,0 +1,14 @@
+{
+  "series": "창세비록",
+  "subtitle": "뫼비우스의 서",
+  "totalVolumes": 20,
+  "volumes": [
+    {
+      "no": 1,
+      "title": "실버 애로우와 제국의 그림자",
+      "spine": "실버 애로우",
+      "cover": "books/vol01_cover.jpg",
+      "files": ["books/vol01_a.pdf", "books/vol01_b.pdf"]
+    }
+  ]
+}
