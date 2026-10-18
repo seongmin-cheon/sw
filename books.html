@@ -105,10 +105,15 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
 .leaf .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--paper);overflow:hidden}
 .leaf .face img{width:100%;height:100%;display:block}
 .leaf .back{transform:rotateY(180deg)}
-.leaf .face::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--flip)}
-.leaf .front::after{background:linear-gradient(270deg,rgba(0,0,0,.35),transparent 60%)}
-.leaf .back::after{background:linear-gradient(90deg,rgba(0,0,0,.35),transparent 60%);opacity:.9}
-.leaf.go .front::after{opacity:1}.leaf.go .back::after{opacity:0}
+/* 넘어가는 장: 제본선 음영은 고정 페이지와 똑같이, 넘기는 동안만 은은한 그늘 */
+.leaf .face::after{content:"";position:absolute;top:0;bottom:0;width:9%;pointer-events:none}
+.leaf .face.asL::after{right:0;background:linear-gradient(90deg,transparent,rgba(0,0,0,.22))}
+.leaf .face.asR::after{left:0;background:linear-gradient(270deg,transparent,rgba(0,0,0,.22))}
+.leaf .face::before{content:"";position:absolute;inset:0;pointer-events:none;background:#000;opacity:0;z-index:1}
+.leaf.go .front::before{animation:shadeF var(--flip) ease-in forwards}
+.leaf.go .back::before{animation:shadeB var(--flip) ease-out forwards}
+@keyframes shadeF{0%{opacity:0}50%{opacity:.16}100%{opacity:.16}}
+@keyframes shadeB{0%{opacity:.16}50%{opacity:.16}100%{opacity:0}}
 .leaf.fwd{left:var(--pw);transform-origin:left center}
 .leaf.fwd.go{transform:rotateY(-180deg)}
 .leaf.bwd{left:0;transform-origin:right center}
@@ -414,9 +419,9 @@ async function flip(dir){
     if(dir>0){leaf.className='leaf fwd';leaf.innerHTML=face('front',ucr)+face('back',null);await setPage($('pR'),nr)}
     else{leaf.className='leaf bwd';leaf.innerHTML=face('front',unr)+face('back',null)}
   }else if(dir>0){
-    leaf.className='leaf fwd';leaf.innerHTML=face('front',ucr)+face('back',unl);await setPage($('pR'),nr);
+    leaf.className='leaf fwd';leaf.innerHTML=face('front asR',ucr)+face('back asL',unl);await setPage($('pR'),nr);
   }else{
-    leaf.className='leaf bwd';leaf.innerHTML=face('front',ucl)+face('back',unr);await setPage($('pL'),nl);
+    leaf.className='leaf bwd';leaf.innerHTML=face('front asL',ucl)+face('back asR',unr);await setPage($('pL'),nl);
   }
   book.appendChild(leaf);
   S.spread=ns;
