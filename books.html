@@ -38,7 +38,7 @@ body.drawer .handle{opacity:0}
 .handle{cursor:pointer}
 aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
   background:repeating-linear-gradient(92deg,transparent 0 9px,rgba(0,0,0,.35) 9px 10px,transparent 10px 23px,rgba(255,220,170,.08) 23px 24px)}
-.brand{position:relative;text-align:center;margin-bottom:16px}
+.brand{position:relative;text-align:center;margin-bottom:24px}
 .brand h1{font-size:25px;font-weight:800;letter-spacing:.12em;color:var(--gold);text-shadow:0 2px 0 #000,0 0 18px rgba(216,180,106,.25)}
 .brand p{font-size:13px;letter-spacing:.3em;color:var(--ink-dim);margin-top:4px}
 .progress{position:relative;margin:0 4px 18px;font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:10px}
@@ -75,7 +75,7 @@ aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.
 .side-foot{position:relative;margin-top:22px;font-size:11px;color:var(--ink-dim);text-align:center;line-height:1.7;opacity:.75}
 
 /* ───────── 열람대 ───────── */
-main{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 24px 14px;min-width:0}
+main{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 24px 14px;min-width:0}
 .vol-title{text-align:center;margin-bottom:12px;min-height:44px}
 .vol-title small{display:block;font-size:12px;letter-spacing:.35em;color:var(--gold-dim)}
 .vol-title strong{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:.04em}
@@ -160,7 +160,6 @@ main{position:relative;height:100%;display:flex;flex-direction:column;align-item
 <aside id="side">
   <div class="handle">책장 ▸</div>
   <div class="brand"><h1 id="sName">창세비록</h1><p id="sSub">뫼비우스의 서</p></div>
-  <div class="progress"><span>연재</span><div class="bar"><i id="pBar"></i></div><span><b id="pNow">0</b> / <span id="pAll">20</span>권</span></div>
   <div class="cabinet" id="cabinet"></div>
   <div class="cur" id="cur"><img id="curCover" alt=""><div><small id="curNo"></small><b id="curTitle"></b></div></div>
   <div class="side-foot">책등을 누르면 그 권이 펼쳐집니다</div>
@@ -209,8 +208,6 @@ function buildShelf(){
   const c=S.cfg,cab=$('cabinet');cab.innerHTML='';
   const total=c.totalVolumes||20,perRow=5;
   $('sName').textContent=c.series;$('sSub').textContent=c.subtitle||'';
-  $('pNow').textContent=c.volumes.length;$('pAll').textContent=total;
-  requestAnimationFrame(()=>$('pBar').style.width=(c.volumes.length/total*100)+'%');
   for(let r=0;r<Math.ceil(total/perRow);r++){
     const row=document.createElement('div');row.className='shelf';
     for(let i=0;i<perRow;i++){
@@ -224,7 +221,7 @@ function buildShelf(){
         el.innerHTML=`<div class="no">${n}</div><div class="t" style="--fs:${Math.min(11,Math.max(7,(h-60)/[...(v.spine||v.title)].length)).toFixed(1)}px">${v.spine||v.title}</div>`;
         el.title=`${n}권 · ${v.title}`;
         el.onclick=()=>{openVolume(n);document.body.classList.remove('drawer')};
-      }else{el.className='spine empty';el.innerHTML=`<span>${n}</span>`}
+      }else{el.className='spine empty'}
       row.appendChild(el);
     }
     cab.appendChild(row);
