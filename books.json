@@ -1,14 +1,24 @@
 {
-  "series": "창세비록",
-  "subtitle": "뫼비우스의 서",
-  "totalVolumes": 20,
-  "volumes": [
+  "library": {
+    "name": "비밀의 서고",
+    "en": "The Secret Archive",
+    "quote": ["세상의 모든 이야기가 잠든 곳,", "책을 펼치는 자에게만", "문이 열린다."]
+  },
+  "series": [
     {
-      "no": 1,
-      "title": "실버 애로우와 제국의 그림자",
-      "spine": "실버 애로우",
-      "cover": "books/vol01_cover.jpg",
-      "files": ["books/vol01_a.pdf", "books/vol01_b.pdf"]
+      "id": "genesis",
+      "title": "창세비록",
+      "subtitle": "뫼비우스의 서",
+      "color": "#6e1f1c",
+      "volumes": [
+        {
+          "no": 1,
+          "title": "실버 애로우와 제국의 그림자",
+          "spine": "실버 애로우",
+          "cover": "books/vol01_cover.jpg",
+          "files": ["books/vol01_a.pdf", "books/vol01_b.pdf"]
+        }
+      ]
     }
   ]
 }
