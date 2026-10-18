@@ -289,7 +289,7 @@ const T = {
 const POSTER = {fin:"linear-gradient(160deg,#c98a2a,#2a1608)", ob:"linear-gradient(160deg,#ff2f9b,#1b0b5c)"};
 
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const ext = (a,url)=>{a.href=url;a.target="_blank";a.rel="noopener"};
+const ext = (a,url)=>{a.href=url}; /* 같은 창에서 열기 → 뒤로가기로 복귀 */
 
 /* 상단 메뉴 */
 const menu = document.getElementById("menu");
