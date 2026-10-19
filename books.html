@@ -82,11 +82,21 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
   background:linear-gradient(180deg,rgba(20,12,6,.9),rgba(20,12,6,.55) 60%,transparent);opacity:0;transform:translateY(-14px);transition:opacity .45s ease,transform .45s ease}
 main.show-title .vol-title{opacity:1;transform:none}
 /* 전체화면: 하단 막대를 겹쳐 띄우고 필요할 때만 표시 */
-body.fs main{padding:6px}
-body.fs .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+body.fs main,body.touch main{padding:6px}
+body.fs .controls,body.touch .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
   background:rgba(20,12,6,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .35s ease,transform .35s ease}
-body.fs main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-body.fs .hint{display:none}
+body.fs main.show-ui .controls,body.touch main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+body.fs .hint,body.touch .hint{display:none}
+body.touch .controls{width:calc(100% - 20px);bottom:max(12px,env(safe-area-inset-bottom))}
+/* 터치 기기: 좌 ⅓ 이전 · 가운데 ⅓ 메뉴 · 우 ⅓ 다음 */
+.hot.mid{display:none}
+body.touch .hot{width:33.34%}
+body.touch .hot.mid{display:block;left:33.33%}
+.tapguide{position:absolute;inset:0;z-index:30;display:flex;pointer-events:none;opacity:0;transition:opacity .4s}
+.tapguide.on{opacity:1}
+.tapguide div{flex:1;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:#fff6e3;text-shadow:0 1px 4px #000;border-right:1px dashed rgba(255,246,227,.35);background:rgba(10,6,3,.35)}
+.tapguide div:last-child{border:0}
+.tapguide div:nth-child(2){background:rgba(10,6,3,.5)}
 body.fs.idle{cursor:none}
 .vol-title small{display:inline;font-size:21px;font-weight:700;letter-spacing:.06em;color:#fff6e3;font-family:'Nanum Myeongjo',serif}
 .vol-title small em{font-style:normal;font-weight:500;font-size:17px;color:#d6c3a0;margin:0 10px 0 8px;font-family:'Noto Sans KR',sans-serif}
@@ -178,6 +188,7 @@ body.fs.idle{cursor:none}
   .vol-title strong{font-size:16px}
 }
 @media (max-width:420px){#bFirst,#bFull{display:none}}
+@media (max-width:860px){.vol-title{padding:12px 16px 30px}.vol-title small{font-size:17px}.vol-title small em{font-size:14px;margin:0 6px 0 5px}.vol-title strong{font-size:15px}}
 @media (max-height:520px){.controls{margin-top:6px;padding:3px 10px}.controls button{width:28px;height:28px}main{padding:6px 12px}.hint{display:none}}
 
 /* ═════════ 상아탑 서고 (첫 화면) ═════════ */
@@ -273,7 +284,9 @@ body.fs.idle{cursor:none}
       <div class="page L" id="pL"><img alt=""></div>
       <div class="page R" id="pR"><img alt=""></div>
       <div class="hot prev" id="hPrev"></div>
+      <div class="hot mid" id="hMid"></div>
       <div class="hot next" id="hNext"></div>
+      <div class="tapguide" id="tapGuide"><div>◀ 이전 쪽</div><div>메뉴 열기·닫기</div><div>다음 쪽 ▶</div></div>
     </div>
     <div class="loader" id="loader"><img id="lCover" alt=""><div class="lbar"><i id="lBar"></i></div><span id="lMsg">책을 펼치는 중…</span></div>
   </div>
@@ -346,7 +359,7 @@ async function openVolume(id){
   const gen=++S.gen;
   document.querySelectorAll('.spine.book').forEach(s=>s.classList.toggle('active',s.dataset.id===id));
   $('curCover').src=v.cover||'';$('curCover').style.display=v.cover?'':'none';$('curNo').textContent=`${sr.title} · 제 ${no} 권`;$('curTitle').textContent=v.title;fitLine($('curTitle'),13.5,10);
-  $('vNo').innerHTML=`${esc(sr.title)}<em>(${no}권)</em>`;$('vTitle').textContent=v.title;peek('show-title',3200);document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
+  $('vNo').innerHTML=`${esc(sr.title)}<em>(${no}권)</em>`;$('vTitle').textContent=v.title;peek('show-title',2000);if(isTouch)peek('show-ui',2000);document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
   const L=$('loader');L.classList.remove('hide');$('lCover').src=v.cover||'';$('lCover').style.display=v.cover?'':'none';
   $('lMsg').textContent='책을 펼치는 중…';$('lBar').style.width='5%';
   S.cache.forEach(u=>URL.revokeObjectURL(u));S.cache.clear();S.map=[];S.N=0;
@@ -364,7 +377,7 @@ async function openVolume(id){
     const saved=store.get('pos_'+id)||1;
     store.set('lastBook',id);
     layout(true);goToPage(saved,true);
-    $('lBar').style.width='100%';setTimeout(()=>L.classList.add('hide'),250);
+    $('lBar').style.width='100%';setTimeout(()=>{L.classList.add('hide');tapGuideOnce()},250);
   }catch(e){console.error(e);$('lMsg').textContent='PDF를 불러오지 못했습니다. (파일 경로·업로드 확인)'}
 }
 
@@ -539,8 +552,13 @@ MAIN.addEventListener('mousemove',e=>{
 });
 MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(isFs())peek('show-ui',600)});
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
-function edgeTap(e){if(!matchMedia('(hover:none)').matches)return false;const y=e.clientY,h=innerHeight;if(y<h*.14||(isFs()&&y>h*.86)){peek('show-title',3000);if(isFs())peek('show-ui',3000);return true}return false}
-$('hNext').onclick=e=>{if(!edgeTap(e))flip(1)};$('hPrev').onclick=e=>{if(!edgeTap(e))flip(-1)};
+const isTouch=matchMedia('(hover:none)').matches;document.body.classList.toggle('touch',isTouch);
+function toggleMenu(){const on=!MAIN.classList.contains('show-ui');clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
+  MAIN.classList.toggle('show-ui',on);MAIN.classList.toggle('show-title',on)}
+function hideMenu(){if(isTouch){MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}}
+$('hNext').onclick=()=>{hideMenu();flip(1)};$('hPrev').onclick=()=>{hideMenu();flip(-1)};$('hMid').onclick=toggleMenu;
+/* 처음 한 번만 누르는 위치 안내 */
+function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
 $('slider').oninput=e=>{const s=+e.target.value;$('pg').textContent=(pagesOf(s).filter(Boolean).join('–'))+' / '+S.N};
@@ -562,7 +580,7 @@ $('stage').addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:t
 $('stage').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>45)flip(dx<0?1:-1);tx=null},{passive:true});
 let rt=0;const relayout=()=>{if(rt)return;rt=requestAnimationFrame(()=>{rt=0;layout()})};
 addEventListener('resize',relayout);addEventListener('orientationchange',relayout);
-document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('fs',!!document.fullscreenElement);document.body.classList.remove('idle');if(document.fullscreenElement){peek('show-ui',2200);peek('show-title',2200)}relayout()});
+document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('fs',!!document.fullscreenElement);document.body.classList.remove('idle');if(document.fullscreenElement){peek('show-ui',2000);peek('show-title',2000)}relayout()});
 if(window.ResizeObserver)new ResizeObserver(relayout).observe($('stage'));
 
 
