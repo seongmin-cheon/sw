@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>책 추가 도우미 | 비밀의 서고</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--bg:#1b120c;--card:#2a1b11;--line:rgba(216,180,106,.22);--ink:#f3e6cf;--dim:#b9a283;--gold:#d8b46a;--red:#e07a6a;--ok:#9fcf8f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:radial-gradient(ellipse at 50% 0%,#3a2516,var(--bg) 60%);color:var(--ink);min-height:100vh;padding:28px 16px 60px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-family:'Nanum Myeongjo',serif;font-size:28px;color:var(--gold);letter-spacing:.06em}
+.sub{color:var(--dim);font-size:13px;margin:6px 0 22px;line-height:1.7}
+.card{background:rgba(42,27,17,.85);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#2a1b11;font-size:12px}
+label{display:block;font-size:13px;color:var(--dim);margin:12px 0 6px}
+input[type=text],input[type=number],select{width:100%;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:#1b120c;color:var(--ink);font:inherit;font-size:14px}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:110px 1fr;gap:12px}
+@media (max-width:560px){.row,.row3{grid-template-columns:1fr}}
+.hint{font-size:12px;color:var(--dim);margin-top:5px;line-height:1.6}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--dim);font-size:13px;transition:border-color .2s,background .2s;position:relative}
+.drop:hover,.drop.over{border-color:var(--gold);background:rgba(216,180,106,.06)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop b{color:var(--ink);display:block;margin-top:4px;word-break:break-all}
+.covers{display:flex;gap:14px;align-items:flex-start}
+.covers img{width:84px;height:126px;object-fit:cover;border-radius:3px;box-shadow:0 6px 16px rgba(0,0,0,.5);display:none;flex:none}
+.covers .drop{flex:1}
+.newseries{display:none;margin-top:4px;padding:12px;border-radius:8px;background:rgba(0,0,0,.2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border:0;border-radius:30px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;
+  color:#2a1b11;background:linear-gradient(180deg,#f1d58f,#c9a45a);box-shadow:0 4px 14px rgba(0,0,0,.4);width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:none;color:var(--gold);box-shadow:inset 0 0 0 1px var(--line);width:auto;padding:8px 14px;font-size:13px;font-weight:500}
+.log{margin-top:14px;font-size:13px;line-height:1.9;color:var(--dim);white-space:pre-line}
+.log .ok{color:var(--ok)}.log .err{color:var(--red)}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:12px;display:none}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9b7a43,#f1d58f);transition:width .3s}
+.list{list-style:none}
+.list li{display:flex;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid rgba(216,180,106,.1);font-size:14px}
+.list li small{color:var(--dim);font-size:12px}
+.list li .x{margin-left:auto;color:var(--dim);background:none;border:0;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line)}
+.list li .x:hover{color:var(--red)}
+.list .s{color:var(--gold);font-weight:700;padding-top:14px;border:0}
+.steps{font-size:13px;line-height:1.9;color:var(--ink);padding-left:18px}
+.steps code{background:rgba(0,0,0,.35);padding:1px 6px;border-radius:4px;color:var(--gold)}
+.warn{font-size:12px;color:var(--dim);line-height:1.7;border-left:2px solid var(--gold);padding-left:10px;margin-top:10px}
+.src{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>책 추가 도우미</h1>
+  <p class="sub">PDF와 표지만 고르면 GitHub에 올릴 파일을 한 번에 만들어 줍니다.<br>
+  이 페이지는 파일을 만들기만 하고 서고를 직접 바꾸지 않습니다. 모든 처리는 이 브라우저 안에서 이루어집니다.</p>
+
+  <div class="card">
+    <h2><b>0</b>현재 서고 목록</h2>
+    <div class="src"><span id="srcMsg">books.json 불러오는 중…</span>
+      <label class="btn ghost" style="margin:0;position:relative">다른 books.json 열기<input type="file" id="jsonFile" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label></div>
+    <ul class="list" id="list"></ul>
+    <p class="warn">목록에서 "빼기"를 누르면 새 books.json에서만 빠집니다. 해당 PDF·표지 파일은 GitHub에서 직접 지워 주세요.</p>
+  </div>
+
+  <div class="card">
+    <h2><b>1</b>작품</h2>
+    <label>작품 선택</label>
+    <select id="series"></select>
+    <div class="newseries" id="newSeries">
+      <div class="row">
+        <div><label>작품 제목</label><input type="text" id="nsTitle" placeholder="예: 창세비록"></div>
+        <div><label>부제 (선택)</label><input type="text" id="nsSub" placeholder="예: 뫼비우스의 서"></div>
+      </div>
+      <div class="row">
+        <div><label>영문 이름 (파일 이름에 쓰임)</label><input type="text" id="nsId" placeholder="예: genesis"><div class="hint">영문 소문자·숫자·하이픈만 됩니다.</div></div>
+        <div><label>책등 색</label><input type="text" id="nsColor" value="#22304f"><div class="hint">예: #6e1f1c(적갈), #22304f(남색), #1f3b2c(녹색)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><b>2</b>권 정보</h2>
+    <div class="row3">
+      <div><label>권 번호</label><input type="number" id="volNo" min="1" value="1"></div>
+      <div><label>권 제목</label><input type="text" id="volTitle" placeholder="예: 실버 애로우와 제국의 그림자"></div>
+    </div>
+    <div class="hint" id="volWarn"></div>
+  </div>
+
+  <div class="card">
+    <h2><b>3</b>파일</h2>
+    <label>본문 PDF</label>
+    <div class="drop" id="pdfDrop">PDF를 끌어다 놓거나 눌러서 고르세요<b id="pdfName"></b><input type="file" id="pdfFile" accept="application/pdf"></div>
+    <label>표지 그림 (선택)</label>
+    <div class="covers">
+      <img id="coverPrev" alt="">
+      <div class="drop" id="coverDrop">jpg·png를 고르세요. 없으면 PDF 첫 쪽을 표지로 씁니다.<b id="coverName"></b><input type="file" id="coverFile" accept="image/*"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><b>4</b>만들기</h2>
+    <button class="btn" id="make">GitHub에 올릴 파일 만들기</button>
+    <div class="bar" id="bar"><i id="barI"></i></div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card">
+    <h2><b>5</b>GitHub에 올리기</h2>
+    <ol class="steps">
+      <li>내려받은 압축 파일을 풉니다.</li>
+      <li>저장소(<code>sw</code>)에서 <code>Add file → Upload files</code>를 누릅니다.</li>
+      <li>압축을 푼 <code>books.json</code>과 <code>books</code> 폴더를 함께 끌어다 놓고 커밋합니다.</li>
+      <li>1~2분 뒤 서고에서 <code>Ctrl + F5</code>로 새로고침하면 새 책이 꽂혀 있습니다.</li>
+    </ol>
+    <p class="warn">저작권이 있는 시판 도서는 올리지 마세요. 본인 작품, 저작권이 끝난 작품, 작가가 배포를 허락한 작품만 올려 주세요.</p>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const MAX_PART=20*1024*1024;            /* 조각당 목표 크기(웹 업로드 한도 25MB보다 여유) */
+const LIMIT=24.5*1024*1024;
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+let CFG=null,pdfBuf=null,coverBlob=null,removed=[];
+
+function log(t,c){const d=document.createElement('div');if(c)d.className=c;d.textContent=t;$('log').appendChild(d)}
+function prog(p){$('bar').style.display='block';$('barI').style.width=Math.round(p*100)+'%'}
+const esc=t=>String(t??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const pad=n=>String(n).padStart(2,'0');
+
+/* ── books.json 불러오기 ── */
+function normalize(c){
+  if(c.volumes&&!c.series)c={library:{name:"비밀의 서고",en:"The Secret Archive"},series:[{id:"genesis",title:c.series||"창세비록",subtitle:c.subtitle,volumes:c.volumes}]};
+  c.library=c.library||{name:"비밀의 서고",en:"The Secret Archive"};c.series=c.series||[];return c;
+}
+function useCfg(c,msg){CFG=normalize(c);$('srcMsg').textContent=msg;render()}
+fetch('books.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()})
+  .then(c=>useCfg(c,'서고의 books.json을 불러왔습니다.'))
+  .catch(()=>useCfg({series:[]},'books.json을 찾지 못했습니다. 오른쪽 버튼으로 직접 열어 주세요.'));
+$('jsonFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{useCfg(JSON.parse(await f.text()),`"${f.name}"을 불러왔습니다.`)}catch(err){alert('books.json 형식이 올바르지 않습니다.')}};
+
+function render(){
+  const L=$('list');L.innerHTML='';
+  CFG.series.forEach(sr=>{
+    L.insertAdjacentHTML('beforeend',`<li class="s">${esc(sr.title)}${sr.subtitle?' · '+esc(sr.subtitle):''}</li>`);
+    (sr.volumes||[]).slice().sort((a,b)=>a.no-b.no).forEach(v=>{
+      const li=document.createElement('li');li.innerHTML=`${v.no}권 · ${esc(v.title)} <small>${(v.files||[]).length}개 파일</small><button class="x">빼기</button>`;
+      li.querySelector('.x').onclick=()=>{if(!confirm(`${sr.title} ${v.no}권을 목록에서 뺄까요?`))return;sr.volumes=sr.volumes.filter(x=>x!==v);removed.push(`${sr.title} ${v.no}권`);render();log(`목록에서 뺐습니다: ${sr.title} ${v.no}권 (만들기를 눌러야 반영됩니다)`)};
+      L.appendChild(li);
+    });
+  });
+  if(!CFG.series.length)L.innerHTML='<li><small>아직 책이 없습니다.</small></li>';
+  const sel=$('series'),cur=sel.value;sel.innerHTML='';
+  CFG.series.forEach(sr=>sel.insertAdjacentHTML('beforeend',`<option value="${esc(sr.id)}">${esc(sr.title)}</option>`));
+  sel.insertAdjacentHTML('beforeend','<option value="__new">＋ 새 작품 추가</option>');
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+  onSeries();
+}
+function curSeries(){return CFG.series.find(s=>s.id===$('series').value)}
+function onSeries(){
+  const isNew=$('series').value==='__new';$('newSeries').style.display=isNew?'block':'none';
+  const sr=curSeries();const next=sr&&sr.volumes&&sr.volumes.length?Math.max(...sr.volumes.map(v=>v.no))+1:1;
+  $('volNo').value=next;checkVol();
+}
+function checkVol(){const sr=curSeries(),n=+$('volNo').value;
+  $('volWarn').textContent=sr&&(sr.volumes||[]).some(v=>v.no===n)?`⚠ ${n}권이 이미 있습니다. 만들면 새 파일로 교체됩니다.`:''}
+$('series').onchange=onSeries;$('volNo').oninput=checkVol;
+$('nsTitle').oninput=()=>{if(!$('nsId').dataset.touched){/* 영문 이름 자동 제안 */$('nsId').value='book-'+Date.now().toString(36).slice(-5)}};
+$('nsId').oninput=()=>{$('nsId').dataset.touched=1};
+
+/* ── 파일 고르기 ── */
+function wireDrop(drop,input,cb){
+  ['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(t=>drop.addEventListener(t,()=>drop.classList.remove('over')));
+  input.onchange=()=>input.files[0]&&cb(input.files[0]);
+}
+wireDrop($('pdfDrop'),$('pdfFile'),async f=>{pdfBuf=await f.arrayBuffer();$('pdfName').textContent=`${f.name} · ${(f.size/1048576).toFixed(1)}MB`;
+  if(!$('volTitle').value){const m=f.name.replace(/\.pdf$/i,'').match(/\(([^)]+)\)/);if(m)$('volTitle').value=m[1]}});
+wireDrop($('coverDrop'),$('coverFile'),async f=>{coverBlob=await shrinkImage(f);$('coverName').textContent=f.name;const p=$('coverPrev');p.src=URL.createObjectURL(coverBlob);p.style.display='block'});
+
+function shrinkImage(src){return new Promise((res,rej)=>{
+  const img=new Image();img.onload=()=>{const s=Math.min(1,400/img.width,600/img.height),c=document.createElement('canvas');
+    c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);c.toBlob(res,'image/jpeg',.84)};
+  img.onerror=rej;img.src=src instanceof Blob?URL.createObjectURL(src):src})}
+async function coverFromPdf(buf){
+  const doc=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,pg=await doc.getPage(1),v1=pg.getViewport({scale:1}),vp=pg.getViewport({scale:800/v1.height});
+  const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  return shrinkImage(c.toDataURL('image/png'));
+}
+
+/* ── PDF 나누기 (조각마다 25MB 미만) ── */
+async function splitPdf(buf){
+  const src=await PDFLib.PDFDocument.load(buf,{ignoreEncryption:true}),N=src.getPageCount();
+  if(buf.byteLength<=LIMIT){log(`PDF ${N}쪽 · 나눌 필요 없음`);return [new Uint8Array(buf)]}
+  let parts=Math.max(2,Math.ceil(buf.byteLength/MAX_PART));
+  for(let tries=0;tries<6;tries++,parts++){
+    log(`PDF ${N}쪽을 ${parts}개로 나누는 중…`);const out=[];let ok=true;
+    for(let i=0;i<parts;i++){
+      const a=Math.floor(i*N/parts),b=Math.floor((i+1)*N/parts);const d=await PDFLib.PDFDocument.create();
+      const pages=await d.copyPages(src,[...Array(b-a).keys()].map(k=>k+a));pages.forEach(p=>d.addPage(p));
+      const bytes=await d.save({useObjectStreams:true});prog(.1+.7*(i+1)/parts);
+      if(bytes.byteLength>LIMIT){ok=false;break}out.push(bytes);
+    }
+    if(ok)return out;
+  }
+  throw new Error('PDF를 25MB 미만으로 나누지 못했습니다. 그림이 아주 큰 쪽이 있는지 확인해 주세요.');
+}
+
+/* ── 만들기 ── */
+$('make').onclick=async()=>{
+  $('log').innerHTML='';prog(0);
+  try{
+    if(!CFG)throw new Error('books.json을 먼저 불러와 주세요.');
+    let sr=curSeries();
+    if($('series').value==='__new'){
+      const t=$('nsTitle').value.trim(),id=$('nsId').value.trim().toLowerCase();
+      if(!t)throw new Error('새 작품 제목을 입력해 주세요.');
+      if(!/^[a-z0-9-]+$/.test(id))throw new Error('영문 이름은 영문 소문자·숫자·하이픈만 쓸 수 있습니다.');
+      if(CFG.series.some(s=>s.id===id))throw new Error('같은 영문 이름의 작품이 이미 있습니다.');
+      sr={id,title:t,subtitle:$('nsSub').value.trim(),color:$('nsColor').value.trim()||'#22304f',volumes:[]};
+    }
+    if(!pdfBuf&&removed.length){ /* 책 빼기만 할 때: books.json만 내려받기 */
+      const b=new Blob([JSON.stringify(CFG,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='books.json';a.click();
+      log(`✓ 새 books.json을 내려받았습니다. GitHub의 books.json을 이 파일로 덮어쓰고, 뺀 책(${removed.join(', ')})의 파일은 직접 지워 주세요.`,'ok');prog(1);return}
+    const no=+$('volNo').value,title=$('volTitle').value.trim();
+    if(!(no>=1))throw new Error('권 번호를 확인해 주세요.');
+    if(!title)throw new Error('권 제목을 입력해 주세요.');
+    if(!pdfBuf)throw new Error('본문 PDF를 골라 주세요.');
+    $('make').disabled=true;
+    const base=`${sr.id}_v${pad(no)}`,zip=new JSZip(),books=zip.folder('books');
+    const parts=await splitPdf(pdfBuf),names=[];
+    parts.forEach((b,i)=>{const n=parts.length>1?`books/${base}_${String.fromCharCode(97+i)}.pdf`:`books/${base}.pdf`;names.push(n);books.file(n.slice(6),b);
+      log(`✓ ${n} (${(b.byteLength/1048576).toFixed(1)}MB)`,'ok')});
+    log('표지 만드는 중…');const cv=coverBlob||await coverFromPdf(pdfBuf);books.file(`${base}_cover.jpg`,cv);log(`✓ books/${base}_cover.jpg`,'ok');prog(.88);
+    /* books.json 갱신 */
+    const cfg=JSON.parse(JSON.stringify(CFG));let s2=cfg.series.find(s=>s.id===sr.id);
+    if(!s2){s2=JSON.parse(JSON.stringify(sr));cfg.series.push(s2)}
+    s2.volumes=(s2.volumes||[]).filter(v=>v.no!==no);
+    s2.volumes.push({no,title,cover:`books/${base}_cover.jpg`,files:names});s2.volumes.sort((a,b)=>a.no-b.no);
+    zip.file('books.json',JSON.stringify(cfg,null,2));log('✓ books.json 갱신','ok');
+    const blob=await zip.generateAsync({type:'blob',compression:'STORE'},m=>prog(.9+.1*m.percent/100));
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`서고추가_${sr.title}_${no}권.zip`;a.click();
+    log(`완료! "${a.download}"를 내려받았습니다. 아래 5번 순서대로 GitHub에 올려 주세요.`,'ok');
+    if(removed.length)log(`목록에서 뺀 책: ${removed.join(', ')} — 해당 파일은 GitHub에서 직접 지워 주세요.`);
+    CFG=cfg;render();prog(1);
+  }catch(err){console.error(err);log('✗ '+(err.message||err),'err')}
+  finally{$('make').disabled=false}
+};
+</script>
+</body>
+</html>

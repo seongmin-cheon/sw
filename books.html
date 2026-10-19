@@ -292,10 +292,10 @@ body.fs.idle{cursor:none}
 /* ── 책갈피 ── */
 .bm.on svg{fill:currentColor}
 .controls .bm.on,.nav-handle .bm.on{color:#f1d58f}
-.ribbon{position:absolute;top:-4px;width:18px;height:46px;z-index:11;pointer-events:none;opacity:0;transform:translateY(-10px);transition:opacity .3s,transform .3s;
-  background:linear-gradient(90deg,#7a1f1c,#a3302b 50%,#7a1f1c);clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.ribbon{position:absolute;top:-6px;width:30px;height:74px;--rc:#c0392b;z-index:11;pointer-events:none;opacity:0;transform:translateY(-10px);transition:opacity .3s,transform .3s;
+  background:linear-gradient(90deg,rgba(0,0,0,.28),rgba(255,255,255,.18) 45%,rgba(0,0,0,.22)),var(--rc);clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
 .ribbon.on{opacity:1;transform:none}
-#hDots i{position:absolute;top:50%;left:var(--p);width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#c43a33;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+#hDots i{position:absolute;top:50%;left:var(--p);width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--rc);box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 .toast{position:absolute;left:50%;top:40%;z-index:40;transform:translate(-50%,-50%) scale(.96);padding:10px 18px;border-radius:20px;font-family:'Noto Sans KR',sans-serif;font-size:13px;
   color:#fff6e3;background:rgba(20,12,6,.88);box-shadow:0 6px 20px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,-50%)}
@@ -305,13 +305,23 @@ body.fs.idle{cursor:none}
 #bmList{list-style:none;margin-top:6px}
 #bmList li{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid rgba(216,180,106,.08);font-size:13px;color:var(--ink);cursor:pointer;border-radius:3px}
 #bmList li:hover{background:rgba(216,180,106,.08)}
-#bmList li::before{content:"";width:8px;height:14px;flex:none;background:#a3302b;clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%)}
+#bmList li::before{content:"";width:11px;height:18px;flex:none;background:var(--rc);clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%)}
 #bmList li small{margin-left:auto;font-size:11px;color:var(--ink-dim)}
 #bmList li button{color:var(--ink-dim);font-size:14px;line-height:1;padding:0 2px}
 #bmList li button:hover{color:#f1d58f}
 #bmList .empty{cursor:default;color:var(--ink-dim);font-size:12px}
 #bmList .empty::before{display:none}
 @media (min-width:861px){body:not(.touch) #hDots i{left:50%;top:var(--p)}}
+
+/* 손잡이 책갈피 바로가기(누르면 그 쪽으로 이동) */
+.hbmk{display:flex;gap:3px;align-items:flex-start}
+.hbmk:empty{display:none}
+.hbmk button{width:12px;height:20px;padding:0;border:0;cursor:pointer;background:var(--rc);clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%);transition:transform .15s;opacity:.9}
+.hbmk button:hover,.hbmk button.cur{transform:translateY(3px);opacity:1}
+.hbmk button.cur{filter:brightness(1.25)}
+@media (min-width:861px){body:not(.touch) .hbmk{flex-direction:column;gap:4px;align-items:center}
+  body:not(.touch) .hbmk button{width:20px;height:12px;clip-path:polygon(0 0,100% 0,80% 50%,100% 100%,0 100%)}
+  body:not(.touch) .hbmk button:hover,body:not(.touch) .hbmk button.cur{transform:translateX(-3px)}}
 </style>
 </head>
 <body>
@@ -365,7 +375,7 @@ body.fs.idle{cursor:none}
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
   <div class="toast" id="toast"></div>
-  <div class="nav-handle" id="navHandle">▾ <span class="hg"><i id="hBar"></i><span id="hDots"></span></span><b id="hPg">– / –</b><em id="hPct">0%</em><span class="hbtns"><button id="hBm" class="bm" title="책갈피 (B)"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></button><button id="hMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button><button id="hFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></span></div>
+  <div class="nav-handle" id="navHandle">▾ <span class="hg"><i id="hBar"></i><span id="hDots"></span></span><span class="hbmk" id="hBmk"></span><b id="hPg">– / –</b><em id="hPct">0%</em><span class="hbtns"><button id="hBm" class="bm" title="책갈피 (B)"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></button><button id="hMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button><button id="hFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></span></div>
   <div class="hint">← → 키 · 페이지 클릭 · 스와이프로 넘기기</div>
 </main>
 
@@ -747,7 +757,7 @@ function backToHall(){
 
 
 /* ═════ 책갈피 (권당 7개, 이 기기·브라우저에 저장) ═════ */
-const BM_MAX=7;
+const BM_MAX=7,BM_COL=['#d63a2f','#e8812a','#e8c22e','#3fa34d','#2f7fd6','#2d3f9a','#8a44b8'],BM_NAME=['빨강','주황','노랑','초록','파랑','남색','보라'];
 const bmGet=()=>S.vol?(store.get('bm_'+S.vol.id)||[]):[];
 const bmSet=a=>{store.set('bm_'+S.vol.id,a.sort((x,y)=>x.p-y.p))};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(PT.toast);PT.toast=setTimeout(()=>e.classList.remove('on'),1800)}
@@ -756,24 +766,26 @@ function bmToggle(){
   if(!S.vol)return;const vis=bmVisible(),a=bmGet(),hit=a.find(b=>vis.includes(b.p));
   if(hit){bmSet(a.filter(b=>b!==hit));toast(`책갈피를 뺐습니다 · ${hit.p}쪽`)}
   else{if(a.length>=BM_MAX)return toast(`책갈피는 권당 ${BM_MAX}개까지예요. 목록에서 하나를 빼 주세요`);
-    const p=vis[0];const d=new Date();a.push({p,d:`${d.getMonth()+1}.${d.getDate()}`});bmSet(a);toast(`책갈피를 꽂았습니다 · ${p}쪽`)}
+    const p=vis[0],d=new Date(),used=a.map(b=>b.c),c=[0,1,2,3,4,5,6].find(i=>!used.includes(i));a.push({p,c,d:`${d.getMonth()+1}.${d.getDate()}`});bmSet(a);toast(`${BM_NAME[c]} 책갈피를 꽂았습니다 · ${p}쪽`)}
   bmRender();armAutoHide&&armAutoHide();
 }
 function bmRender(){
-  const a=bmGet(),vis=S.vol?bmVisible():[],hit=a.find(b=>vis.includes(b.p));
+  const a=bmGet();a.forEach((b,i)=>{if(b.c==null)b.c=i%7});const vis=S.vol?bmVisible():[],col=b=>BM_COL[b.c%7],hit=a.find(b=>vis.includes(b.p));
   document.querySelectorAll('.bm').forEach(b=>b.classList.toggle('on',!!hit));
   const rb=$('ribbon');
   if(hit){const onLeft=!S.single&&pagesOf(S.spread)[0]===hit.p;const pw=$('pR').offsetWidth;
-    rb.style.left=(onLeft?pw-34:(S.single?pw-34:pw*2-34))+'px';rb.classList.add('on')}else rb.classList.remove('on');
-  $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%"></i>`).join(''):'';
+    rb.style.left=(onLeft?pw-46:(S.single?pw-46:pw*2-46))+'px';rb.style.setProperty('--rc',col(hit));rb.classList.add('on')}else rb.classList.remove('on');
+  $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%;--rc:${col(b)}"></i>`).join(''):'';
+  $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'cur':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} · ${b.p}쪽으로 이동"></button>`).join('');
   $('bmCount').textContent=`${a.length}/${BM_MAX}`;
-  $('bmList').innerHTML=a.length?a.map(b=>`<li data-p="${b.p}">${b.p}쪽<small>${b.d}</small><button data-del="${b.p}" title="빼기">×</button></li>`).join(''):'<li class="empty">꽂은 책갈피가 없습니다</li>';
+  $('bmList').innerHTML=a.length?a.map(b=>`<li data-p="${b.p}" style="--rc:${col(b)}">${b.p}쪽<small>${b.d}</small><button data-del="${b.p}" title="빼기">×</button></li>`).join(''):'<li class="empty">꽂은 책갈피가 없습니다</li>';
 }
 $('bmList').addEventListener('click',e=>{
   const del=e.target.closest('[data-del]');if(del){e.stopPropagation();bmSet(bmGet().filter(b=>b.p!==+del.dataset.del));bmRender();return}
   const li=e.target.closest('li[data-p]');if(li){goToPage(+li.dataset.p);document.body.classList.remove('drawer')}
 });
 $('bBm').addEventListener('click',bmToggle);
+$('hBmk').addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(!t)return;e.stopPropagation();goToPage(+t.dataset.go);toast(`${t.title.split(' ·')[0]} 책갈피 · ${t.dataset.go}쪽`)});
 $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 
 /* ── 시작 ── */
