@@ -317,11 +317,11 @@ body.fs.idle{cursor:none}
 .hbmk{display:flex;gap:3px;align-items:flex-start}
 .hbmk:empty{display:none}
 .hbmk button{width:12px;height:20px;padding:0;border:0;cursor:pointer;background:var(--rc);clip-path:polygon(0 0,100% 0,100% 100%,50% 75%,0 100%);transition:transform .15s;opacity:.9}
-.hbmk button:hover,.hbmk button.cur{transform:translateY(3px);opacity:1}
-.hbmk button.cur{filter:brightness(1.25)}
+.hbmk button:hover,.hbmk button.here{transform:translateY(3px);opacity:1}
+.hbmk button.here{filter:brightness(1.25)}
 @media (min-width:861px){body:not(.touch) .hbmk{flex-direction:column;gap:4px;align-items:center}
   body:not(.touch) .hbmk button{width:20px;height:12px;clip-path:polygon(0 0,100% 0,80% 50%,100% 100%,0 100%)}
-  body:not(.touch) .hbmk button:hover,body:not(.touch) .hbmk button.cur{transform:translateX(-3px)}}
+  body:not(.touch) .hbmk button:hover,body:not(.touch) .hbmk button.here{transform:translateX(-3px)}}
 </style>
 </head>
 <body>
@@ -776,7 +776,7 @@ function bmRender(){
   if(hit){const onLeft=!S.single&&pagesOf(S.spread)[0]===hit.p;const pw=$('pR').offsetWidth;
     rb.style.left=(onLeft?pw-46:(S.single?pw-46:pw*2-46))+'px';rb.style.setProperty('--rc',col(hit));rb.classList.add('on')}else rb.classList.remove('on');
   $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%;--rc:${col(b)}"></i>`).join(''):'';
-  $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'cur':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} · ${b.p}쪽으로 이동"></button>`).join('');
+  $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'here':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} · ${b.p}쪽으로 이동"></button>`).join('');
   $('bmCount').textContent=`${a.length}/${BM_MAX}`;
   $('bmList').innerHTML=a.length?a.map(b=>`<li data-p="${b.p}" style="--rc:${col(b)}">${b.p}쪽<small>${b.d}</small><button data-del="${b.p}" title="빼기">×</button></li>`).join(''):'<li class="empty">꽂은 책갈피가 없습니다</li>';
 }
