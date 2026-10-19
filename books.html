@@ -98,7 +98,7 @@ body.ovl .hint{display:none}
 .nav-handle .hg i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9b7a43,#f1d58f);border-radius:2px;transition:width .4s ease}
 .nav-handle em{font-style:normal;color:var(--gold);min-width:34px;text-align:right}
 @media (max-width:420px){.nav-handle .hg{width:70px}}
-.nav-handle .hbtns{display:none}
+.nav-handle .hbtns{display:flex;gap:2px;margin-left:2px;padding-left:6px;border-left:1px solid rgba(216,180,106,.2)}
 .nav-handle .hbtns button{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--gold);transition:background .2s}
 .nav-handle .hbtns button:hover{background:rgba(216,180,106,.18)}
 .nav-handle .hbtns svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -275,7 +275,7 @@ body.fs.idle{cursor:none}
   body:not(.touch) .nav-handle{top:50%;left:auto;right:0;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:10px;
     padding:14px 6px;border-radius:10px 0 0 10px;border:1px solid rgba(216,180,106,.3);border-right:0;box-shadow:-3px 0 10px rgba(0,0,0,.4)}
   body:not(.touch) .nav-handle b{display:none}
-  body:not(.touch) .nav-handle .hbtns{display:flex;flex-direction:column;gap:4px;margin-top:2px;padding-top:8px;border-top:1px solid rgba(216,180,106,.2)}
+  body:not(.touch) .nav-handle .hbtns{display:flex;flex-direction:column;gap:4px;margin:2px 0 0;padding:8px 0 0;border-left:0;border-top:1px solid rgba(216,180,106,.2)}
   body:not(.touch) .nav-handle em{min-width:0;text-align:center;font-size:12px;font-weight:600}
   body:not(.touch) .nav-handle .hg{width:4px;height:110px}
   body:not(.touch) .nav-handle .hg i{width:100%!important;height:var(--pc,0%);transition:height .4s ease;background:linear-gradient(180deg,#9b7a43,#f1d58f)}
@@ -541,9 +541,10 @@ function curlFlip(book,o){
       prev=0;
       segs.forEach((sg,i)=>{
         sg.g.style.transform=`rotateY(${-(phis[i]-prev)}deg)`;prev=phis[i];
-        const a=Math.sin(phis[i]*Math.PI/180),b=Math.sin(phis[i+1]*Math.PI/180),ga=gut(B[i]),gb=gut(B[i+1]);
-        sg.fs.style.background=`linear-gradient(${fDir}deg,rgba(0,0,0,${Math.min(.6,.3*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.6,.3*b+gb).toFixed(3)}))`;
-        sg.bs.style.background=`linear-gradient(${bDir}deg,rgba(0,0,0,${Math.min(.6,.24*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.6,.24*b+gb).toFixed(3)}))`;
+        /* 장이 제본선에서 들릴수록 제본선 음영은 옅어지고(틈이 벌어짐), 휨 음영은 바깥쪽으로 갈수록만 진해짐 */
+        const lift=1-Math.sin(phis[0]*Math.PI/180)*.6,a=Math.sin(phis[i]*Math.PI/180)*Math.min(1,.35+i/SEG),b=Math.sin(phis[i+1]*Math.PI/180)*Math.min(1,.35+(i+1)/SEG),ga=gut(B[i])*lift,gb=gut(B[i+1])*lift;
+        sg.fs.style.background=`linear-gradient(${fDir}deg,rgba(0,0,0,${Math.min(.42,.28*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.42,.28*b+gb).toFixed(3)}))`;
+        sg.bs.style.background=`linear-gradient(${bDir}deg,rgba(0,0,0,${Math.min(.38,.22*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.38,.22*b+gb).toFixed(3)}))`;
       });
       if(t<1)requestAnimationFrame(frame);else res();
     }
@@ -589,6 +590,8 @@ const isTouch=matchMedia('(hover:none)').matches||matchMedia('(pointer:coarse)')
 $('navHandle').addEventListener('click',e=>{e.stopPropagation();toggleMenu()});
 $('hMode').addEventListener('click',e=>{e.stopPropagation();$('bMode').click()});
 $('hFull').addEventListener('click',e=>{e.stopPropagation();$('bFull').click()});
+/* 전체화면을 지원하지 않는 기기(아이폰 등)에서는 전체화면 아이콘 숨김 */
+if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)){$('hFull').style.display='none';$('bFull').style.display='none'}
 const fixArrow=()=>{$('navHandle').firstChild.nodeValue=(!isTouch&&innerWidth>860)?'◂ ':'▾ '};fixArrow();addEventListener('resize',fixArrow);
 /* 메뉴 자동 숨김: 연 뒤 3초간 조작이 없으면 닫힘 (메뉴 위에 마우스·손가락이 있는 동안은 유지) */
 const AUTO_HIDE=3000;let menuHold=false;
@@ -617,7 +620,8 @@ $('bFirst').onclick=()=>goToPage(1);
 $('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=(!isTouch&&innerWidth>860)?Math.round(Math.max(...ps)/S.N*100)+'%':ps.join('–')+' / '+S.N};
 $('slider').onchange=e=>{const s=+e.target.value;goToPage(pagesOf(s).filter(Boolean)[0])};
 $('bMode').onclick=()=>{S.forceSingle=!S.single;layout()};
-$('bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()};
+$('bFull').onclick=()=>{const d=document,el=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);else(el.requestFullscreen||el.webkitRequestFullscreen)?.call(el)};
+document.addEventListener('webkitfullscreenchange',()=>{document.body.classList.toggle('fs',!!document.webkitFullscreenElement);relayout()});
 $('bMenu').onclick=()=>document.body.classList.toggle('drawer');
 document.querySelector('.handle').onclick=()=>document.body.classList.toggle('drawer');
 $('scrim').onclick=()=>document.body.classList.remove('drawer');
