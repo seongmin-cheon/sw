@@ -77,8 +77,17 @@ aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.
 .side-foot{position:relative;margin-top:22px;font-size:11px;color:var(--ink-dim);text-align:center;line-height:1.7;opacity:.75}
 
 /* ───────── 열람대 ───────── */
-main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 24px 14px;min-width:0}
-.vol-title{text-align:center;margin-bottom:12px;min-height:44px}
+main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 24px 14px;min-width:0}
+.vol-title{position:absolute;top:0;left:0;right:0;z-index:25;text-align:center;padding:14px 16px 34px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(20,12,6,.9),rgba(20,12,6,.55) 60%,transparent);opacity:0;transform:translateY(-14px);transition:opacity .45s ease,transform .45s ease}
+main.show-title .vol-title{opacity:1;transform:none}
+/* 전체화면: 하단 막대를 겹쳐 띄우고 필요할 때만 표시 */
+body.fs main{padding:6px}
+body.fs .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+  background:rgba(20,12,6,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .35s ease,transform .35s ease}
+body.fs main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+body.fs .hint{display:none}
+body.fs.idle{cursor:none}
 .vol-title small{display:block;font-size:12px;letter-spacing:.35em;color:var(--gold-dim)}
 .vol-title strong{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:.04em}
 .stage{position:relative;flex:1;width:100%;contain:size;display:flex;align-items:center;justify-content:center;min-height:0}
@@ -160,7 +169,7 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
   .vol-title strong{font-size:16px}
 }
 @media (max-width:420px){#bFirst,#bFull{display:none}}
-@media (max-height:520px){.vol-title{display:none}.controls{margin-top:6px;padding:3px 10px}.controls button{width:28px;height:28px}main{padding:6px 12px}.hint{display:none}}
+@media (max-height:520px){.controls{margin-top:6px;padding:3px 10px}.controls button{width:28px;height:28px}main{padding:6px 12px}.hint{display:none}}
 
 /* ═════════ 상아탑 서고 (첫 화면) ═════════ */
 #hall{position:fixed;inset:0;z-index:60;overflow:hidden auto;color:#f3e8d2;background:#0b1028;
@@ -328,7 +337,7 @@ async function openVolume(id){
   const gen=++S.gen;
   document.querySelectorAll('.spine.book').forEach(s=>s.classList.toggle('active',s.dataset.id===id));
   $('curCover').src=v.cover||'';$('curCover').style.display=v.cover?'':'none';$('curNo').textContent=`${sr.title} · 제 ${no} 권`;$('curTitle').textContent=v.title;fitLine($('curTitle'),13.5,10);
-  $('vNo').textContent=`${sr.title} · 제 ${no} 권`;$('vTitle').textContent=v.title;document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
+  $('vNo').textContent=`${sr.title} · 제 ${no} 권`;$('vTitle').textContent=v.title;peek('show-title',3200);document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
   const L=$('loader');L.classList.remove('hide');$('lCover').src=v.cover||'';$('lCover').style.display=v.cover?'':'none';
   $('lMsg').textContent='책을 펼치는 중…';$('lBar').style.width='5%';
   S.cache.forEach(u=>URL.revokeObjectURL(u));S.cache.clear();S.map=[];S.N=0;
@@ -459,7 +468,22 @@ function layout(force){
 }
 
 /* ── 입력 ── */
-$('hNext').onclick=()=>flip(1);$('hPrev').onclick=()=>flip(-1);
+/* 제목·하단 막대 자동 숨김 */
+const MAIN=document.querySelector('main'),PT={};
+function peek(cls,ms){MAIN.classList.add(cls);clearTimeout(PT[cls]);PT[cls]=setTimeout(()=>MAIN.classList.remove(cls),ms)}
+const isFs=()=>document.body.classList.contains('fs');
+MAIN.addEventListener('mousemove',e=>{
+  const r=MAIN.getBoundingClientRect(),y=e.clientY-r.top;
+  if(y<90){MAIN.classList.add('show-title');clearTimeout(PT['show-title'])}else if(MAIN.classList.contains('show-title')&&!PT.tWait)PT.tWait=setTimeout(()=>{PT.tWait=0;MAIN.classList.remove('show-title')},500);
+  if(y<90){clearTimeout(PT.tWait);PT.tWait=0}
+  if(isFs()){document.body.classList.remove('idle');
+    if(y>r.height-110){MAIN.classList.add('show-ui');clearTimeout(PT['show-ui'])}else peek('show-ui',1800);
+    clearTimeout(PT.idle);PT.idle=setTimeout(()=>document.body.classList.add('idle'),2500)}
+});
+MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(isFs())peek('show-ui',600)});
+/* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
+function edgeTap(e){if(!matchMedia('(hover:none)').matches)return false;const y=e.clientY,h=innerHeight;if(y<h*.14||(isFs()&&y>h*.86)){peek('show-title',3000);if(isFs())peek('show-ui',3000);return true}return false}
+$('hNext').onclick=e=>{if(!edgeTap(e))flip(1)};$('hPrev').onclick=e=>{if(!edgeTap(e))flip(-1)};
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
 $('slider').oninput=e=>{const s=+e.target.value;$('pg').textContent=(pagesOf(s).filter(Boolean).join('–'))+' / '+S.N};
@@ -481,7 +505,7 @@ $('stage').addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:t
 $('stage').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>45)flip(dx<0?1:-1);tx=null},{passive:true});
 let rt=0;const relayout=()=>{if(rt)return;rt=requestAnimationFrame(()=>{rt=0;layout()})};
 addEventListener('resize',relayout);addEventListener('orientationchange',relayout);
-document.addEventListener('fullscreenchange',relayout);
+document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('fs',!!document.fullscreenElement);document.body.classList.remove('idle');if(document.fullscreenElement){peek('show-ui',2200);peek('show-title',2200)}relayout()});
 if(window.ResizeObserver)new ResizeObserver(relayout).observe($('stage'));
 
 
