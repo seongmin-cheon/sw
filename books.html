@@ -86,6 +86,7 @@ body.ovl main{padding:calc(34px + env(safe-area-inset-top)) 6px 6px}
 body.ovl .controls{position:absolute;left:50%;top:calc(56px + env(safe-area-inset-top));bottom:auto;z-index:27;margin:0;transform:translate(-50%,-12px);opacity:0;pointer-events:none;
   background:rgba(20,12,6,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .35s ease,transform .35s ease}
 body.ovl main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+body.touch .controls{width:calc(100% - 20px)}
 body.ovl .hint{display:none}
 /* 하단 손잡이(쪽 번호) — 좌측 책장 손잡이와 같은 방식 */
 .nav-handle{position:absolute;left:50%;top:env(safe-area-inset-top);z-index:26;transform:translateX(-50%);display:flex;white-space:nowrap;align-items:center;gap:8px;
@@ -99,7 +100,7 @@ body.ovl .hint{display:none}
 @media (max-width:420px){.nav-handle .hg{width:70px}}
 main.show-ui .nav-handle,main.show-title .nav-handle{opacity:0;transform:translate(-50%,-100%);pointer-events:none}
 
-body.touch .controls{width:calc(100% - 20px)}
+
 /* 터치 기기: 좌 ⅓ 이전 · 가운데 ⅓ 메뉴 · 우 ⅓ 다음 */
 .hot.mid{display:none}
 
@@ -557,18 +558,24 @@ const isFs=()=>document.body.classList.contains('fs');
 MAIN.addEventListener('mousemove',e=>{
   const r=MAIN.getBoundingClientRect(),y=e.clientY-r.top;
   if(!isTouch){document.body.classList.remove('idle');
-    if(y<130){clearTimeout(PT['show-ui']);PT['show-ui']=0}
-    else if(MAIN.classList.contains('show-ui')&&!PT['show-ui'])PT['show-ui']=setTimeout(()=>{PT['show-ui']=0;MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')},500);
     clearTimeout(PT.idle);if(isFs())PT.idle=setTimeout(()=>document.body.classList.add('idle'),2500)}
 });
-MAIN.addEventListener('mouseleave',()=>{if(!isTouch&&MAIN.classList.contains('show-ui')){clearTimeout(PT.lv);PT.lv=setTimeout(()=>{MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')},600)}});
-MAIN.addEventListener('mouseenter',()=>clearTimeout(PT.lv));
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
 const isTouch=matchMedia('(hover:none)').matches||matchMedia('(pointer:coarse)').matches||(navigator.maxTouchPoints>1&&/Macintosh|iPad/.test(navigator.userAgent));document.body.classList.toggle('touch',isTouch);document.body.classList.add('ovl');
 $('navHandle').addEventListener('click',e=>{e.stopPropagation();toggleMenu()});
+/* 메뉴 자동 숨김: 연 뒤 3초간 조작이 없으면 닫힘 (메뉴 위에 마우스·손가락이 있는 동안은 유지) */
+const AUTO_HIDE=3000;let menuHold=false;
+function closeMenu(){clearTimeout(PT.auto);MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}
+function armAutoHide(ms){clearTimeout(PT.auto);if(MAIN.classList.contains('show-ui')&&!menuHold)PT.auto=setTimeout(closeMenu,ms||AUTO_HIDE)}
 function toggleMenu(){const on=!MAIN.classList.contains('show-ui');clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
-  MAIN.classList.toggle('show-ui',on);MAIN.classList.toggle('show-title',on)}
-function hideMenu(){if(isTouch){MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}}
+  if(!on)return closeMenu();MAIN.classList.add('show-ui');MAIN.classList.add('show-title');armAutoHide()}
+{const C=document.querySelector('.controls');
+  C.addEventListener('pointerenter',()=>{menuHold=true;clearTimeout(PT.auto)});
+  C.addEventListener('pointerleave',()=>{menuHold=false;armAutoHide(1500)});
+  C.addEventListener('pointerdown',()=>clearTimeout(PT.auto));
+  C.addEventListener('pointerup',()=>{if(isTouch){menuHold=false;armAutoHide()}});
+  C.addEventListener('input',()=>clearTimeout(PT.auto));C.addEventListener('change',()=>armAutoHide())}
+function hideMenu(){if(isTouch)closeMenu()}
 /* 터치: 화면 위·아래 띠(제목·막대 자리)를 누르면 쪽을 넘기지 않고 메뉴만 토글 */
 const edgeBand=()=>false;
 $('hNext').onclick=e=>{if(edgeBand(e))return toggleMenu();hideMenu();flip(1)};
