@@ -82,24 +82,24 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
   background:linear-gradient(180deg,rgba(20,12,6,.9),rgba(20,12,6,.55) 60%,transparent);opacity:0;transform:translateY(-14px);transition:opacity .45s ease,transform .45s ease}
 main.show-title .vol-title{opacity:1;transform:none}
 /* 전체화면: 하단 막대를 겹쳐 띄우고 필요할 때만 표시 */
-body.ovl main{padding:6px 6px calc(34px + env(safe-area-inset-bottom))}
-body.ovl .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+body.ovl main{padding:calc(34px + env(safe-area-inset-top)) 6px 6px}
+body.ovl .controls{position:absolute;left:50%;top:calc(56px + env(safe-area-inset-top));bottom:auto;z-index:27;margin:0;transform:translate(-50%,-12px);opacity:0;pointer-events:none;
   background:rgba(20,12,6,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .35s ease,transform .35s ease}
 body.ovl main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 body.ovl .hint{display:none}
 /* 하단 손잡이(쪽 번호) — 좌측 책장 손잡이와 같은 방식 */
-.nav-handle{position:absolute;left:50%;bottom:env(safe-area-inset-bottom);z-index:24;transform:translateX(-50%);display:flex;white-space:nowrap;align-items:center;gap:8px;
-  padding:5px 16px 6px;border-radius:10px 10px 0 0;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--gold);cursor:pointer;
-  background:linear-gradient(180deg,#3a2112,#24140a);border:1px solid rgba(216,180,106,.3);border-bottom:0;box-shadow:0 -3px 10px rgba(0,0,0,.4);
+.nav-handle{position:absolute;left:50%;top:env(safe-area-inset-top);z-index:26;transform:translateX(-50%);display:flex;white-space:nowrap;align-items:center;gap:8px;
+  padding:6px 16px 5px;border-radius:0 0 10px 10px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--gold);cursor:pointer;
+  background:linear-gradient(180deg,#3a2112,#24140a);border:1px solid rgba(216,180,106,.3);border-top:0;box-shadow:0 3px 10px rgba(0,0,0,.4);
   transition:opacity .3s,transform .3s;font-variant-numeric:tabular-nums}
 .nav-handle b{font-weight:500;color:#e8d6ad}
 .nav-handle .hg{width:110px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 1px 1px rgba(0,0,0,.5)}
 .nav-handle .hg i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9b7a43,#f1d58f);border-radius:2px;transition:width .4s ease}
 .nav-handle em{font-style:normal;color:var(--gold);min-width:34px;text-align:right}
 @media (max-width:420px){.nav-handle .hg{width:70px}}
-main.show-ui .nav-handle{opacity:0;transform:translate(-50%,100%);pointer-events:none}
+main.show-ui .nav-handle,main.show-title .nav-handle{opacity:0;transform:translate(-50%,-100%);pointer-events:none}
 
-body.touch .controls{width:calc(100% - 20px);bottom:max(12px,env(safe-area-inset-bottom))}
+body.touch .controls{width:calc(100% - 20px)}
 /* 터치 기기: 좌 ⅓ 이전 · 가운데 ⅓ 메뉴 · 우 ⅓ 다음 */
 .hot.mid{display:none}
 
@@ -312,7 +312,7 @@ body.fs.idle{cursor:none}
     <button id="bMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button>
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
-  <div class="nav-handle" id="navHandle">▴ <span class="hg"><i id="hBar"></i></span><b id="hPg">– / –</b><em id="hPct">0%</em></div>
+  <div class="nav-handle" id="navHandle">▾ <span class="hg"><i id="hBar"></i></span><b id="hPg">– / –</b><em id="hPct">0%</em></div>
   <div class="hint">← → 키 · 페이지 클릭 · 스와이프로 넘기기</div>
 </main>
 
@@ -497,7 +497,8 @@ function curlFlip(book,o){
             bs=mk('cb',o.back,bx,`transform:rotateY(180deg)${o.mirror?' scaleX(-1)':''};`);
       parent.appendChild(g);segs.push({g,fs,bs});parent=g;
     }
-    if(o.gut){segs[0].g.querySelector('.cf').classList.add('gutF');segs[0].g.querySelector('.cb').classList.add('gutB')}
+    /* 제본선 음영: 고정 페이지와 똑같이 제본선에서 0.22 → 폭 9% 지점에서 0 */
+    const gut=x=>o.gut?Math.max(0,.22*(1-x/(.09*W))):0;
     book.appendChild(root);
     /* 음영 방향: 띠 안에서 이웃 띠 쪽으로 부드럽게 이어지도록 */
     const fDir=o.mirror?270:90,bDir=o.mirror?90:270;
@@ -515,9 +516,9 @@ function curlFlip(book,o){
       prev=0;
       segs.forEach((sg,i)=>{
         sg.g.style.transform=`rotateY(${-(phis[i]-prev)}deg)`;prev=phis[i];
-        const a=Math.sin(phis[i]*Math.PI/180),b=Math.sin(phis[i+1]*Math.PI/180);
-        sg.fs.style.background=`linear-gradient(${fDir}deg,rgba(0,0,0,${(.3*a).toFixed(3)}),rgba(0,0,0,${(.3*b).toFixed(3)}))`;
-        sg.bs.style.background=`linear-gradient(${bDir}deg,rgba(0,0,0,${(.24*a).toFixed(3)}),rgba(0,0,0,${(.24*b).toFixed(3)}))`;
+        const a=Math.sin(phis[i]*Math.PI/180),b=Math.sin(phis[i+1]*Math.PI/180),ga=gut(B[i]),gb=gut(B[i+1]);
+        sg.fs.style.background=`linear-gradient(${fDir}deg,rgba(0,0,0,${Math.min(.6,.3*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.6,.3*b+gb).toFixed(3)}))`;
+        sg.bs.style.background=`linear-gradient(${bDir}deg,rgba(0,0,0,${Math.min(.6,.24*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.6,.24*b+gb).toFixed(3)}))`;
       });
       if(t<1)requestAnimationFrame(frame);else res();
     }
@@ -555,14 +556,13 @@ function peek(cls,ms){MAIN.classList.add(cls);clearTimeout(PT[cls]);PT[cls]=setT
 const isFs=()=>document.body.classList.contains('fs');
 MAIN.addEventListener('mousemove',e=>{
   const r=MAIN.getBoundingClientRect(),y=e.clientY-r.top;
-  if(y<90){MAIN.classList.add('show-title');clearTimeout(PT['show-title'])}else if(MAIN.classList.contains('show-title')&&!PT.tWait)PT.tWait=setTimeout(()=>{PT.tWait=0;MAIN.classList.remove('show-title')},500);
-  if(y<90){clearTimeout(PT.tWait);PT.tWait=0}
   if(!isTouch){document.body.classList.remove('idle');
-    if(y>r.height-110){clearTimeout(PT['show-ui']);PT['show-ui']=0}
-    else if(MAIN.classList.contains('show-ui')&&!PT['show-ui'])PT['show-ui']=setTimeout(()=>{PT['show-ui']=0;MAIN.classList.remove('show-ui')},500);
+    if(y<130){clearTimeout(PT['show-ui']);PT['show-ui']=0}
+    else if(MAIN.classList.contains('show-ui')&&!PT['show-ui'])PT['show-ui']=setTimeout(()=>{PT['show-ui']=0;MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')},500);
     clearTimeout(PT.idle);if(isFs())PT.idle=setTimeout(()=>document.body.classList.add('idle'),2500)}
 });
-MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(!isTouch&&MAIN.classList.contains('show-ui'))peek('show-ui',600)});
+MAIN.addEventListener('mouseleave',()=>{if(!isTouch&&MAIN.classList.contains('show-ui')){clearTimeout(PT.lv);PT.lv=setTimeout(()=>{MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')},600)}});
+MAIN.addEventListener('mouseenter',()=>clearTimeout(PT.lv));
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
 const isTouch=matchMedia('(hover:none)').matches||matchMedia('(pointer:coarse)').matches||(navigator.maxTouchPoints>1&&/Macintosh|iPad/.test(navigator.userAgent));document.body.classList.toggle('touch',isTouch);document.body.classList.add('ovl');
 $('navHandle').addEventListener('click',e=>{e.stopPropagation();toggleMenu()});
