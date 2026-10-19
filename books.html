@@ -354,7 +354,7 @@ body.fs.idle{cursor:none}
     <div class="book" id="book">
       <div class="page L" id="pL"><img alt=""></div>
       <div class="page R" id="pR"><img alt=""></div>
-      <div class="ribbon" id="ribbon"></div>
+      <div class="ribbon" id="ribbon"></div><div class="ribbon" id="ribbon2"></div>
       <div class="hot prev" id="hPrev"></div>
       <div class="hot mid" id="hMid"></div>
       <div class="hot next" id="hNext"></div>
@@ -516,7 +516,7 @@ async function goToPage(p,instant){
 async function flip(dir){
   if(S.busy||!S.vol||S.inHall)return;
   const ns=S.spread+dir;if(ns<0||ns>maxSpread())return;
-  S.busy=true;$('ribbon').classList.remove('on');
+  S.busy=true;$('ribbon').classList.remove('on');$('ribbon2').classList.remove('on');
   const [cl,cr]=pagesOf(S.spread),[nl,nr]=pagesOf(ns);
   const urls=await Promise.all([cl,cr,nl,nr].map(renderPage));await Promise.all(urls.map(decode));
   const [ucl,ucr,unl,unr]=urls,book=$('book');
@@ -763,8 +763,8 @@ const bmSet=a=>{store.set('bm_'+S.vol.id,a.sort((x,y)=>x.p-y.p))};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(PT.toast);PT.toast=setTimeout(()=>e.classList.remove('on'),1800)}
 function bmVisible(){const [l,r]=pagesOf(S.spread);return [l,r].filter(Boolean)}
 function bmToggle(){
-  if(!S.vol)return;const vis=bmVisible(),a=bmGet(),hit=a.find(b=>vis.includes(b.p));
-  if(hit){bmSet(a.filter(b=>b!==hit));toast(`책갈피를 뺐습니다 · ${hit.p}쪽`)}
+  if(!S.vol)return;const vis=bmVisible(),a=bmGet(),hits=a.filter(b=>vis.includes(b.p));
+  if(hits.length){bmSet(a.filter(b=>!hits.includes(b)));toast(`책갈피를 뺐습니다 · ${hits.map(h=>h.p+'쪽').join(', ')}`)}
   else{if(a.length>=BM_MAX)return toast(`책갈피는 권당 ${BM_MAX}개까지예요. 목록에서 하나를 빼 주세요`);
     const p=vis[0],d=new Date(),used=a.map(b=>b.c),c=[0,1,2,3,4,5,6].find(i=>!used.includes(i));a.push({p,c,d:`${d.getMonth()+1}.${d.getDate()}`});bmSet(a);toast(`${BM_NAME[c]} 책갈피를 꽂았습니다 · ${p}쪽`)}
   bmRender();armAutoHide&&armAutoHide();
@@ -772,9 +772,11 @@ function bmToggle(){
 function bmRender(){
   const a=bmGet();a.forEach((b,i)=>{if(b.c==null)b.c=i%7});const vis=S.vol?bmVisible():[],col=b=>BM_COL[b.c%7],hit=a.find(b=>vis.includes(b.p));
   document.querySelectorAll('.bm').forEach(b=>b.classList.toggle('on',!!hit));
-  const rb=$('ribbon');
-  if(hit){const onLeft=!S.single&&pagesOf(S.spread)[0]===hit.p;const pw=$('pR').offsetWidth;
-    rb.style.left=(onLeft?pw-46:(S.single?pw-46:pw*2-46))+'px';rb.style.setProperty('--rc',col(hit));rb.classList.add('on')}else rb.classList.remove('on');
+  /* 펼친 두 쪽 각각에 리본 표시 */
+  const [pl,pr]=S.vol?pagesOf(S.spread):[null,null],pw=$('pR').offsetWidth;
+  const slots=S.single?[[pr,pw-46]]:[[pl,pw-46],[pr,pw*2-46]];
+  ['ribbon','ribbon2'].forEach((id,k)=>{const rb=$(id),sl=slots[k],h=sl&&a.find(b=>b.p===sl[0]);
+    if(h){rb.style.left=sl[1]+'px';rb.style.setProperty('--rc',col(h));rb.classList.add('on')}else rb.classList.remove('on')});
   $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%;--rc:${col(b)}"></i>`).join(''):'';
   $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'here':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} · ${b.p}쪽으로 이동"></button>`).join('');
   $('bmCount').textContent=`${a.length}/${BM_MAX}`;
@@ -788,6 +790,10 @@ $('bBm').addEventListener('click',bmToggle);
 $('hBmk').addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(!t)return;e.stopPropagation();goToPage(+t.dataset.go);toast(`${t.title.split(' ·')[0]} 책갈피 · ${t.dataset.go}쪽`)});
 $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 
+/* 숨은 입구: 책장 상단 '비밀의 서고'를 1.5초 안에 5번 누르면 책 추가 도우미를 새 창으로 */
+{let n=0,t=0;const br=document.querySelector('aside .brand');br.style.cursor='default';
+  br.addEventListener('click',e=>{e.stopPropagation();const now=Date.now();n=(now-t<1500)?n+1:1;t=now;
+    if(n>=5){n=0;window.open('admin.html','_blank','noopener')}})}
 /* ── 시작 ── */
 (async()=>{
   let c;try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;c=await r.json()}catch(e){c=FALLBACK}
