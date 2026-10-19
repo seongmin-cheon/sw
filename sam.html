@@ -105,8 +105,10 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .hero .verbs{margin:14px 0 0;font-size:14px;letter-spacing:.14em;color:#a1a1a6;text-transform:uppercase}
 .doors{margin:clamp(40px,6vw,56px) auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:680px}
 @media (max-width:600px){.doors{grid-template-columns:repeat(2,1fr)}}
-.doors a{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:72px;padding:14px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);transition:background .25s var(--ease),border-color .25s var(--ease),transform .25s var(--ease)}
-.doors a:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.24);transform:translateY(-2px)}
+.doors a{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:72px;padding:14px 12px;border-radius:16px;background:#141416;border:1.5px solid #3a3a3e;transition:background .25s var(--ease),border-color .25s var(--ease),transform .25s var(--ease)}
+.doors a:hover{background:#1c1c1f;border-color:#6e6e73;transform:translateY(-2px)}
+.doors a:has(.badge.hot){border-color:#7a3226}
+.doors a:has(.badge.new){border-color:#7a6438}
 .doors b{font-size:16px;font-weight:700;color:#f5f5f7}
 .doors small{font-size:12px;color:#a1a1a6}
 .hero .terms{margin-top:28px;color:#2997ff;font-size:14px}
