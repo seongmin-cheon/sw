@@ -78,7 +78,7 @@ aside::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.
 
 /* ───────── 열람대 ───────── */
 main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 24px 14px;min-width:0}
-.vol-title{position:absolute;top:0;left:0;right:0;z-index:25;text-align:center;padding:14px 16px 34px;pointer-events:none;
+.vol-title{position:absolute;top:0;left:0;right:0;z-index:25;text-align:left;padding:14px 28px 34px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;
   background:linear-gradient(180deg,rgba(20,12,6,.9),rgba(20,12,6,.55) 60%,transparent);opacity:0;transform:translateY(-14px);transition:opacity .45s ease,transform .45s ease}
 main.show-title .vol-title{opacity:1;transform:none}
 /* 전체화면: 하단 막대를 겹쳐 띄우고 필요할 때만 표시 */
@@ -88,8 +88,9 @@ body.fs .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;tra
 body.fs main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 body.fs .hint{display:none}
 body.fs.idle{cursor:none}
-.vol-title small{display:block;font-size:12px;letter-spacing:.35em;color:var(--gold-dim)}
-.vol-title strong{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:.04em}
+.vol-title small{display:inline;font-size:16px;font-weight:700;letter-spacing:.06em;color:var(--gold);font-family:'Nanum Myeongjo',serif}
+.vol-title small em{font-style:normal;font-weight:400;font-size:14px;color:var(--ink-dim);margin:0 8px 0 6px;font-family:'Noto Sans KR',sans-serif}
+.vol-title strong{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:.02em}
 .stage{position:relative;flex:1;width:100%;contain:size;display:flex;align-items:center;justify-content:center;min-height:0}
 .book{position:relative;width:calc(var(--pw)*2);height:var(--ph);perspective:2000px;transition:transform .5s ease}
 .book.single{width:var(--pw)}
@@ -344,7 +345,7 @@ async function openVolume(id){
   const gen=++S.gen;
   document.querySelectorAll('.spine.book').forEach(s=>s.classList.toggle('active',s.dataset.id===id));
   $('curCover').src=v.cover||'';$('curCover').style.display=v.cover?'':'none';$('curNo').textContent=`${sr.title} · 제 ${no} 권`;$('curTitle').textContent=v.title;fitLine($('curTitle'),13.5,10);
-  $('vNo').textContent=`${sr.title} · 제 ${no} 권`;$('vTitle').textContent=v.title;peek('show-title',3200);document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
+  $('vNo').innerHTML=`${esc(sr.title)}<em>(${no}권)</em>`;$('vTitle').textContent=v.title;peek('show-title',3200);document.title=`${sr.title} ${no}권 — ${v.title} | ${S.lib.name}`;
   const L=$('loader');L.classList.remove('hide');$('lCover').src=v.cover||'';$('lCover').style.display=v.cover?'':'none';
   $('lMsg').textContent='책을 펼치는 중…';$('lBar').style.width='5%';
   S.cache.forEach(u=>URL.revokeObjectURL(u));S.cache.clear();S.map=[];S.N=0;
