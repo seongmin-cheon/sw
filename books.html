@@ -687,6 +687,14 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 /* 게이지 옆 % 강조 */
 .nav-handle em#hPct{font-weight:700;color:#f1d58f;min-width:30px;text-align:left}
 .controls .pg{min-width:44px!important;font-weight:700;color:#f1d58f!important}
+
+/* ═════ 밤 독서 모드: 기기가 다크모드면 자동, 메뉴의 달 버튼으로 직접 전환 ═════ */
+body.night .page img,body.night .cface,body.night .leaf .face img{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
+body.night .page,body.night .cface,body.night .leaf .face{background-color:#1d1a16}
+body.night .page.L::after{background:linear-gradient(90deg,transparent,rgba(0,0,0,.45))}
+body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.45))}
+#bNight.on{color:#fff3cf;background:rgba(216,180,106,.2)}
+#bNight.on svg{fill:currentColor}
 </style>
 </head>
 <body>
@@ -744,6 +752,7 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
     <button id="bNext" title="다음"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
     <button id="bBm" class="bm" title="책갈피 (B)"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></button>
     <button id="bMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button>
+    <button id="bNight" title="밤 독서 모드"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
   <div class="toast" id="toast"></div>
@@ -1178,15 +1187,22 @@ function backToHall(){setTimeout(placeFabs,500);
 
 /* ═════ 책갈피 (권당 7개, 이 기기·브라우저에 저장) ═════ */
 const BM_MAX=7,BM_COL=['#d63a2f','#e8812a','#e8c22e','#3fa34d','#2f7fd6','#2d3f9a','#8a44b8'],BM_NAME=['빨간','주황','노란','초록','파란','남색','보라'];
-const bmGet=()=>S.vol?(store.get('bm_'+S.vol.id)||[]):[];
+/* 책갈피는 '펼침면(두 쪽)' 단위로 하나: 같은 펼침면에 두 개가 있으면 하나만 남김 */
+const bmPair=p=>p<=1?[1]:(p%2===0?[p,p+1]:[p-1,p]);
+const bmKey=p=>bmPair(p)[0];
+const bmGet=()=>{if(!S.vol)return[];const a=store.get('bm_'+S.vol.id)||[],seen=new Set(),out=[];
+  a.forEach(b=>{const k=bmKey(b.p);if(!seen.has(k)){seen.add(k);out.push(b)}});if(out.length!==a.length)store.set('bm_'+S.vol.id,out);return out};
 const bmSet=a=>{store.set('bm_'+S.vol.id,a.sort((x,y)=>x.p-y.p))};
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(PT.toast);PT.toast=setTimeout(()=>e.classList.remove('on'),1800)}
-function bmVisible(){const [l,r]=pagesOf(S.spread);return [l,r].filter(Boolean)}
+function bmVisible(){const [l,r]=pagesOf(S.spread),v=new Set();[l,r].filter(Boolean).forEach(p=>bmPair(p).forEach(q=>v.add(q)));return [...v]}
 function bmToggle(){
-  if(!S.vol)return;const vis=bmVisible(),a=bmGet(),hits=a.filter(b=>vis.includes(b.p));
-  if(hits.length){bmSet(a.filter(b=>!hits.includes(b)));toast(hits.length>1?'책갈피들을 조용히 거두었어요':`${BM_NAME[(hits[0].c||0)%7]} 책갈피를 조용히 거두었어요`)}
+  /* 가름끈 방식: 지금 보는 쪽에 꽂음. 같은 펼침면에 이미 있으면 → 같은 쪽이면 거두고, 다른 쪽이면 지금 쪽으로 옮김 */
+  if(!S.vol)return;const vis=bmVisible(),a=bmGet(),hits=a.filter(b=>vis.includes(b.p)),cur=pagesOf(S.spread).filter(Boolean)[0];
+  if(hits.length){const h=hits[0];
+    if(h.p===cur){bmSet(a.filter(b=>b!==h));toast(`${BM_NAME[(h.c||0)%7]} 책갈피를 조용히 거두었어요`)}
+    else{h.p=cur;const d=new Date();h.d=`${d.getMonth()+1}.${d.getDate()}`;bmSet(a);toast(`${BM_NAME[(h.c||0)%7]} 책갈피를 지금 쪽으로 옮겨 두었어요`)}}
   else{if(a.length>=BM_MAX)return toast('일곱 빛깔 책갈피가 모두 제자리를 찾았어요. 하나를 거두면 다시 꽂을 수 있어요');
-    const p=vis[0],d=new Date(),used=a.map(b=>b.c),c=[0,1,2,3,4,5,6].find(i=>!used.includes(i));a.push({p,c,d:`${d.getMonth()+1}.${d.getDate()}`});bmSet(a);toast(`${BM_NAME[c]} 책갈피를 살며시 끼워 두었어요`)}
+    const p=pagesOf(S.spread).filter(Boolean)[0],d=new Date(),used=a.map(b=>b.c),c=[0,1,2,3,4,5,6].find(i=>!used.includes(i));a.push({p,c,d:`${d.getMonth()+1}.${d.getDate()}`});bmSet(a);toast(`${BM_NAME[c]} 책갈피를 살며시 끼워 두었어요`)}
   bmRender();armAutoHide&&armAutoHide();
 }
 function bmRender(){
@@ -1196,7 +1212,7 @@ function bmRender(){
   const [pl,pr]=S.vol?pagesOf(S.spread):[null,null],pw=$('pR').offsetWidth;
   /* 위치는 CSS가 페이지 폭(--pw) 기준으로 계산 → 화면 크기가 바뀌어도 늘 같은 자리 */
   const slots=S.single?[[pr,'R']]:[[pl,'L'],[pr,'R']];
-  ['ribbon','ribbon2'].forEach((id,k)=>{const rb=$(id),sl=slots[k],h=sl&&a.find(b=>b.p===sl[0]);
+  ['ribbon','ribbon2'].forEach((id,k)=>{const rb=$(id),sl=slots[k],h=sl&&sl[0]&&a.find(b=>S.single?bmPair(sl[0]).includes(b.p):b.p===sl[0]);
     if(h){rb.style.left='';rb.dataset.slot=sl[1];rb.style.setProperty('--rc',col(h));rb.classList.add('on')}else rb.classList.remove('on')});
   $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%;--rc:${col(b)}"></i>`).join(''):'';
   $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'here':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} 책갈피로 이동" data-n="${BM_NAME[b.c%7]}"></button>`).join('');
@@ -1238,6 +1254,15 @@ $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 }
 /* 화면 크기가 PC↔휴대폰 기준을 넘나들면 쪽 표시(% / 쪽번호)를 다시 맞춤 */
 {let wasPC=innerWidth>860;addEventListener('resize',()=>{const pc=innerWidth>860;if(pc!==wasPC){wasPC=pc;if(S.vol)updateUI();if(typeof fixArrow==='function')fixArrow()}})}
+/* 밤 독서 모드: 저장된 선택 > 기기 다크모드 */
+{const mq=matchMedia('(prefers-color-scheme: dark)');
+  const MOON='<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+        SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+  const apply=()=>{const pick=store.get('night');const on=pick==null?mq.matches:pick;document.body.classList.toggle('night',on);
+    const b=$('bNight');b.innerHTML=on?SUN:MOON;b.title=on?'낮 독서 모드로':'밤 독서 모드로';b.classList.remove('on')};
+  apply();mq.addEventListener?.('change',()=>{if(store.get('night')==null)apply()});
+  $('bNight').onclick=()=>{const on=!document.body.classList.contains('night');store.set('night',on===mq.matches?null:on);apply();
+    toast(on?'밤 독서 모드로 바꿨어요':'낮 독서 모드로 바꿨어요');if(typeof armAutoHide==='function')armAutoHide()}}
 /* ── 시작 ── */
 (async()=>{
   let c;try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;c=await r.json()}catch(e){c=FALLBACK}
