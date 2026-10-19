@@ -146,7 +146,9 @@ body.fs.idle{cursor:none}
 .cleaf{position:absolute;top:0;z-index:10;transform-style:preserve-3d;pointer-events:none}
 .cseg{position:absolute;top:0;transform-origin:left center;transform-style:preserve-3d}
 .cface{position:absolute;top:0;bottom:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-color:var(--paper);background-repeat:no-repeat}
-.cface i{position:absolute;inset:0;pointer-events:none}
+.cface i,.cface b{position:absolute;inset:0;pointer-events:none}
+.cface b{background-color:var(--paper);background-repeat:no-repeat}
+.cseg{will-change:transform}
 .cface.gutF::after,.cface.gutB::after{content:"";position:absolute;inset:0;pointer-events:none}
 .cface.gutF::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.2))}
 .cface.gutB::after{background:linear-gradient(90deg,transparent,rgba(0,0,0,.2))}
@@ -690,8 +692,8 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 .controls .pg{min-width:44px!important;font-weight:700;color:#f1d58f!important}
 
 /* ═════ 밤 독서 모드: 기기가 다크모드면 자동, 메뉴의 달 버튼으로 직접 전환 ═════ */
-body.night .page img,body.night .cface,body.night .leaf .face img{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
-body.night .page,body.night .cface,body.night .leaf .face{background-color:#1d1a16}
+body.night .page img,body.night .cface b,body.night .leaf .face img{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
+body.night .page,body.night .cface,body.night .cface b,body.night .leaf .face{background-color:#1d1a16}
 body.night .page.L::after{background:linear-gradient(90deg,transparent,rgba(0,0,0,.45))}
 body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.45))}
 #bNight.on{color:#fff3cf;background:rgba(216,180,106,.2)}
@@ -712,6 +714,12 @@ body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0
 /* 강제 다크모드(삼성 인터넷 등) 대응: 글자 그라데이션(배경 잘라 쓰기)은 어둡게 뒤집히므로 단색 금빛 글자 + 그림자로 */
 .h-title,.a-title b,.brand h1,#soonPop b{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;
   color:#f3d48a!important;-webkit-text-fill-color:#f3d48a!important;text-shadow:0 1px 0 #7a5a24,0 2px 10px rgba(0,0,0,.85),0 0 24px rgba(255,214,140,.35)!important;filter:none!important}
+
+/* 삼성 인터넷 어둡게 모드: 브라우저가 책장 그림을 먼저 뒤집으므로 밤·낮 필터를 반대로 */
+body.samdark .page img,body.samdark .cface b,body.samdark .leaf .face img{filter:invert(1) hue-rotate(180deg)!important}
+body.samdark.night .page img,body.samdark.night .cface b,body.samdark.night .leaf .face img{filter:none!important}
+body.night .cface b.nb,body.samdark .cface b.nb{filter:none!important}
+body.night .cface b.nb{background-color:#1d1a16!important}
 </style>
 </head>
 <body>
@@ -966,12 +974,13 @@ function curlFlip(book,o){
     for(let i=0;i<SEG;i++){
       const w=B[i+1]-B[i];
       /* 그림 면을 양옆 이웃 띠 위로 3px씩 겹쳐 그려 경계의 틈(밝은 선)을 덮음 */
-      const L=i===0?0:3,R=i===SEG-1?0:3,fw=w+L+R;
+      const L=i===0?0:1,R=i===SEG-1?0:1,fw=w+L+R;
       const g=document.createElement('div');g.className='cseg';
       g.style.cssText=`left:${prevW}px;width:${w}px;height:${H}px`;prevW=w;
       const fx=o.mirror?W-B[i+1]-R:B[i]-L, bx=o.mirror?B[i]-L:W-B[i+1]-R;
       const mk=(cls,url,x,extra)=>{const f=document.createElement('div');f.className='cface '+cls;
-        f.style.cssText=`left:${-L}px;width:${fw}px;background-image:${url?`url(${url})`:'none'};background-size:${W}px ${H}px;background-position:${-x}px 0;${extra}`;
+        f.style.cssText=`left:${-L}px;width:${fw}px;${extra}`;
+        const im=document.createElement('b');if(!url)im.className='nb';im.style.cssText=`background-image:${url?`url(${url})`:'none'};background-size:${W}px ${H}px;background-position:${-x}px 0`;f.appendChild(im);
         const sh=document.createElement('i');f.appendChild(sh);g.appendChild(f);return sh};
       const fs=mk('cf',o.front,fx,o.mirror?'transform:scaleX(-1);':''),
             bs=mk('cb',o.back,bx,`transform:rotateY(180deg)${o.mirror?' scaleX(-1)':''};`);
@@ -982,11 +991,11 @@ function curlFlip(book,o){
     book.appendChild(root);
     /* 음영 방향: 띠 안에서 이웃 띠 쪽으로 부드럽게 이어지도록 */
     const fDir=o.mirror?270:90,bDir=o.mirror?90:270;
-    const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720,t0=performance.now();
+    const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720;let t0=0;
     const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
     const phis=new Array(SEG+1);
     function frame(now){
-      let t=Math.min(1,(now-t0)/D);const tt=o.reverse?1-t:t;
+      if(!t0)t0=now;let t=Math.min(1,(now-t0)/D);const tt=o.reverse?1-t:t;
       const base=180*ease(tt),bend=140*Math.sin(Math.PI*tt);
       let prev=0;
       for(let i=0;i<=SEG;i++){
@@ -1003,7 +1012,9 @@ function curlFlip(book,o){
       });
       if(t<1)requestAnimationFrame(frame);else res();
     }
-    requestAnimationFrame(frame);
+    /* 새 장의 그림이 화면 밖 타일까지 다 그려질 시간을 2프레임 주고 시작(아랫부분 계단 깨짐 방지) */
+    root.style.visibility='hidden';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{root.style.visibility='';requestAnimationFrame(frame)}));
   });
 }
 
@@ -1276,7 +1287,8 @@ $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 {const mq=matchMedia('(prefers-color-scheme: dark)');
   const MOON='<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
         SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
-  const apply=()=>{const pick=store.get('night');const on=pick==null?mq.matches:pick;document.body.classList.toggle('night',on);
+  const sam=/SamsungBrowser/i.test(navigator.userAgent);
+  const apply=()=>{document.body.classList.toggle('samdark',sam&&mq.matches);const pick=store.get('night');const on=pick==null?mq.matches:pick;document.body.classList.toggle('night',on);
     const b=$('bNight');b.innerHTML=on?SUN:MOON;b.title=on?'낮 독서 모드로':'밤 독서 모드로';b.classList.remove('on')};
   apply();mq.addEventListener?.('change',()=>{if(store.get('night')==null)apply()});
   $('bNight').onclick=()=>{const on=!document.body.classList.contains('night');store.set('night',on===mq.matches?null:on);apply();
