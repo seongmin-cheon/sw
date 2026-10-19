@@ -676,6 +676,7 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 .a-case{background:linear-gradient(180deg,rgba(14,22,58,.72),rgba(8,12,34,.82))!important;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .a-top{background:linear-gradient(180deg,rgba(7,10,28,.85),rgba(7,10,28,.4) 70%,transparent)!important}
 .a-title small,.a-title em,.a-title .a-count{text-shadow:0 1px 6px #000}
+#hall,#allShelf{-webkit-user-select:none;user-select:none}
 </style>
 </head>
 <body>
@@ -1206,6 +1207,24 @@ $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 /* 숨은 입구 2: 깊은 서가 제목을 1.5초 안에 5번 누르면 책 추가 도우미 */
 {let n=0,t=0;const tt=document.querySelector('.a-title b');tt.style.cursor='default';tt.style.userSelect='none';
   tt.addEventListener('click',e=>{const now=Date.now();n=(now-t<1500)?n+1:1;t=now;if(n>=5){n=0;window.open('admin.html','_blank','noopener')}})}
+/* 서고 ↔ 깊은 서가: 좌우로 밀어서 이동(터치), 트랙패드 가로 스크롤도 */
+{const sw=(el,dirFn)=>{let x0=null,y0=0,t0=0;
+  el.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
+  el.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-t0<800)dirFn(dx<0?'left':'right')},{passive:true});
+  let acc=0,lock=0;el.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)<=Math.abs(e.deltaY)||lock)return;acc+=e.deltaX;
+    if(Math.abs(acc)>120){dirFn(acc>0?'left':'right');acc=0;lock=1;setTimeout(()=>lock=0,900)}},{passive:true})};
+  /* 마우스 드래그: 빈 곳을 잡고 옆으로 끌기(책·버튼 위에서 시작하면 무시) */
+  const md=(el,dirFn)=>{let x0=null,y0=0,t0=0,moved=false;
+    el.addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('button,a,input,.h-book,.h-pick,.a-book,.spine'))return;x0=e.clientX;y0=e.clientY;t0=Date.now();moved=false});
+    addEventListener('mousemove',e=>{if(x0!=null&&Math.abs(e.clientX-x0)>8){moved=true;el.style.cursor='grabbing'}});
+    addEventListener('mouseup',e=>{if(x0==null)return;const dx=e.clientX-x0,dy=e.clientY-y0;x0=null;el.style.cursor='';
+      if(moved&&Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-t0<1200)dirFn(dx<0?'left':'right')})};
+  md($('hall'),d=>{if(d==='left'&&S.inHall&&!document.body.classList.contains('all-on'))showAll()});
+  md($('allShelf'),d=>{if(d==='right')hideAll()});
+  sw($('hall'),d=>{if(d==='left'&&S.inHall&&!document.body.classList.contains('all-on'))showAll()});
+  sw($('allShelf'),d=>{if(d==='right')hideAll()});
+}
 /* ── 시작 ── */
 (async()=>{
   let c;try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;c=await r.json()}catch(e){c=FALLBACK}
