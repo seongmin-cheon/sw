@@ -82,11 +82,23 @@ main{position:relative;z-index:1;height:100%;min-height:0;display:flex;flex-dire
   background:linear-gradient(180deg,rgba(20,12,6,.9),rgba(20,12,6,.55) 60%,transparent);opacity:0;transform:translateY(-14px);transition:opacity .45s ease,transform .45s ease}
 main.show-title .vol-title{opacity:1;transform:none}
 /* 전체화면: 하단 막대를 겹쳐 띄우고 필요할 때만 표시 */
-body.fs main,body.touch main{padding:6px}
-body.fs .controls,body.touch .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+body.ovl main{padding:6px}
+body.ovl .controls{position:absolute;left:50%;bottom:16px;z-index:25;margin:0;transform:translate(-50%,12px);opacity:0;pointer-events:none;
   background:rgba(20,12,6,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .35s ease,transform .35s ease}
-body.fs main.show-ui .controls,body.touch main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-body.fs .hint,body.touch .hint{display:none}
+body.ovl main.show-ui .controls{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+body.ovl .hint{display:none}
+/* 하단 손잡이(쪽 번호) — 좌측 책장 손잡이와 같은 방식 */
+.nav-handle{position:absolute;left:50%;bottom:0;z-index:24;transform:translateX(-50%);display:flex;white-space:nowrap;align-items:center;gap:8px;
+  padding:5px 16px 6px;border-radius:10px 10px 0 0;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--gold);cursor:pointer;
+  background:linear-gradient(180deg,#3a2112,#24140a);border:1px solid rgba(216,180,106,.3);border-bottom:0;box-shadow:0 -3px 10px rgba(0,0,0,.4);
+  transition:opacity .3s,transform .3s;font-variant-numeric:tabular-nums;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+.nav-handle b{font-weight:500;color:#e8d6ad}
+.nav-handle .hg{width:110px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 1px 1px rgba(0,0,0,.5)}
+.nav-handle .hg i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9b7a43,#f1d58f);border-radius:2px;transition:width .4s ease}
+.nav-handle em{font-style:normal;color:var(--gold);min-width:34px;text-align:right}
+@media (max-width:420px){.nav-handle .hg{width:70px}}
+main.show-ui .nav-handle{opacity:0;transform:translate(-50%,100%);pointer-events:none}
+body.fs.idle .nav-handle{opacity:.35}
 body.touch .controls{width:calc(100% - 20px);bottom:max(12px,env(safe-area-inset-bottom))}
 /* 터치 기기: 좌 ⅓ 이전 · 가운데 ⅓ 메뉴 · 우 ⅓ 다음 */
 .hot.mid{display:none}
@@ -301,6 +313,7 @@ body.fs.idle{cursor:none}
     <button id="bMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button>
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
+  <div class="nav-handle" id="navHandle">▴ <span class="hg"><i id="hBar"></i></span><b id="hPg">– / –</b><em id="hPct">0%</em></div>
   <div class="hint">← → 키 · 페이지 클릭 · 스와이프로 넘기기</div>
 </main>
 
@@ -422,7 +435,7 @@ function updateUI(){
   const [l,r]=pagesOf(S.spread),b=$('book');
   b.classList.toggle('cover-only',!S.single&&!l);
   b.classList.toggle('back-only',!S.single&&!r);
-  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;
+  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('hPct').textContent=pc+'%'}
   $('slider').max=maxSpread();$('slider').value=S.spread;
   $('bPrev').disabled=$('bFirst').disabled=S.spread<=0;$('bNext').disabled=S.spread>=maxSpread();
   store.set('pos_'+S.vol.id,l||r);
@@ -545,19 +558,20 @@ MAIN.addEventListener('mousemove',e=>{
   const r=MAIN.getBoundingClientRect(),y=e.clientY-r.top;
   if(y<90){MAIN.classList.add('show-title');clearTimeout(PT['show-title'])}else if(MAIN.classList.contains('show-title')&&!PT.tWait)PT.tWait=setTimeout(()=>{PT.tWait=0;MAIN.classList.remove('show-title')},500);
   if(y<90){clearTimeout(PT.tWait);PT.tWait=0}
-  if(isFs()){document.body.classList.remove('idle');
+  if(!isTouch){document.body.classList.remove('idle');
     if(y>r.height-110){MAIN.classList.add('show-ui');clearTimeout(PT['show-ui']);PT['show-ui']=0}
     else if(MAIN.classList.contains('show-ui')&&!PT['show-ui'])PT['show-ui']=setTimeout(()=>{PT['show-ui']=0;MAIN.classList.remove('show-ui')},500);
-    clearTimeout(PT.idle);PT.idle=setTimeout(()=>document.body.classList.add('idle'),2500)}
+    clearTimeout(PT.idle);if(isFs())PT.idle=setTimeout(()=>document.body.classList.add('idle'),2500)}
 });
-MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(isFs())peek('show-ui',600)});
+MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(!isTouch)peek('show-ui',600)});
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
-const isTouch=matchMedia('(hover:none)').matches;document.body.classList.toggle('touch',isTouch);
-function toggleMenu(){const on=!MAIN.classList.contains('show-ui')||(!isTouch&&isFs());clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
+const isTouch=matchMedia('(hover:none)').matches;document.body.classList.toggle('touch',isTouch);document.body.classList.add('ovl');
+$('navHandle').addEventListener('click',e=>{e.stopPropagation();toggleMenu()});
+function toggleMenu(){const on=!MAIN.classList.contains('show-ui');clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
   MAIN.classList.toggle('show-ui',on);MAIN.classList.toggle('show-title',on)}
 function hideMenu(){if(isTouch){MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}}
 /* 터치: 화면 위·아래 띠(제목·막대 자리)를 누르면 쪽을 넘기지 않고 메뉴만 토글 */
-const edgeBand=e=>isTouch?(e.clientY<90||e.clientY>innerHeight-130):(isFs()&&e.clientY>innerHeight-130);
+const edgeBand=e=>isTouch&&e.clientY<70;
 $('hNext').onclick=e=>{if(edgeBand(e))return toggleMenu();hideMenu();flip(1)};
 $('hPrev').onclick=e=>{if(edgeBand(e))return toggleMenu();hideMenu();flip(-1)};
 $('hMid').onclick=toggleMenu;
