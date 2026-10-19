@@ -677,6 +677,16 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 .a-top{background:linear-gradient(180deg,rgba(7,10,28,.85),rgba(7,10,28,.4) 70%,transparent)!important}
 .a-title small,.a-title em,.a-title .a-count{text-shadow:0 1px 6px #000}
 #hall,#allShelf{-webkit-user-select:none;user-select:none}
+
+/* 책갈피: 각 페이지 바깥쪽 위 모서리에서 페이지 폭의 일정 비율만큼 안쪽 */
+.ribbon{--rw:clamp(26px,calc(var(--pw) * .085),46px);width:var(--rw)!important;height:calc(var(--rw) * 3.05)!important;top:calc(var(--rw) * -.18)!important}
+.ribbon[data-slot="L"]{left:calc(var(--pw) * .06)!important}
+.ribbon[data-slot="R"]{left:calc(var(--pw) * 2 - var(--pw) * .06 - var(--rw))!important}
+.book.single .ribbon[data-slot="R"]{left:calc(var(--pw) * .94 - var(--rw))!important}
+
+/* 게이지 옆 % 강조 */
+.nav-handle em#hPct{font-weight:700;color:#f1d58f;min-width:30px;text-align:left}
+.controls .pg{min-width:44px!important;font-weight:700;color:#f1d58f!important}
 </style>
 </head>
 <body>
@@ -737,7 +747,7 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
   <div class="toast" id="toast"></div>
-  <div class="nav-handle" id="navHandle">▾ <button id="hShelf" title="책장"><svg viewBox="0 0 24 24"><path d="M4 4v16M9 4v16M14 5l4 15M3 20h18"/></svg></button><span class="hg"><i id="hBar"></i><span id="hDots"></span></span><span class="hbmk" id="hBmk"></span><b id="hPg">– / –</b><em id="hPct">0%</em><span class="hbtns"><button id="hBm" class="bm" title="책갈피 (B)"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></button><button id="hMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button><button id="hFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></span></div>
+  <div class="nav-handle" id="navHandle">▾ <button id="hShelf" title="책장"><svg viewBox="0 0 24 24"><path d="M4 4v16M9 4v16M14 5l4 15M3 20h18"/></svg></button><span class="hg"><i id="hBar"></i><span id="hDots"></span></span><em id="hPct">0%</em><span class="hbmk" id="hBmk"></span><b id="hPg">– / –</b><span class="hbtns"><button id="hBm" class="bm" title="책갈피 (B)"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></button><button id="hMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button><button id="hFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></span></div>
   <div class="hint">← → 키 · 페이지 클릭 · 스와이프로 넘기기</div>
 </main>
 
@@ -876,7 +886,7 @@ function updateUI(){
   const [l,r]=pagesOf(S.spread),b=$('book');
   b.classList.toggle('cover-only',!S.single&&!l);
   b.classList.toggle('back-only',!S.single&&!r);
-  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('navHandle').style.setProperty('--pc',pc+'%');$('hPct').textContent=pc+'%';if(!isTouch&&innerWidth>860)$('pg').textContent=pc+'%'}
+  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('navHandle').style.setProperty('--pc',pc+'%');$('hPct').textContent=pc+'%';$('pg').textContent=pc+'%'}
   $('slider').max=maxSpread();$('slider').value=S.spread;
   $('bPrev').disabled=$('bFirst').disabled=S.spread<=0;$('bNext').disabled=S.spread>=maxSpread();
   store.set('pos_'+S.vol.id,l||r);store.set('n_'+S.vol.id,S.N);
@@ -1036,7 +1046,7 @@ $('stage').addEventListener('click',e=>{if(isTouch&&!e.target.closest('#book')&&
 function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
-$('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=(!isTouch&&innerWidth>860)?Math.round(Math.max(...ps)/S.N*100)+'%':ps.join('–')+' / '+S.N};
+$('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=Math.round(Math.max(...ps)/S.N*100)+'%'};
 $('slider').onchange=e=>{const s=+e.target.value;goToPage(pagesOf(s).filter(Boolean)[0])};
 $('bMode').onclick=()=>{S.forceSingle=!S.single;layout()};
 $('bFull').onclick=()=>{const d=document,el=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);else(el.requestFullscreen||el.webkitRequestFullscreen)?.call(el)};
@@ -1184,9 +1194,10 @@ function bmRender(){
   document.querySelectorAll('.bm').forEach(b=>b.classList.toggle('on',!!hit));
   /* 펼친 두 쪽 각각에 리본 표시 */
   const [pl,pr]=S.vol?pagesOf(S.spread):[null,null],pw=$('pR').offsetWidth;
-  const slots=S.single?[[pr,pw-46]]:[[pl,pw-46],[pr,pw*2-46]];
+  /* 위치는 CSS가 페이지 폭(--pw) 기준으로 계산 → 화면 크기가 바뀌어도 늘 같은 자리 */
+  const slots=S.single?[[pr,'R']]:[[pl,'L'],[pr,'R']];
   ['ribbon','ribbon2'].forEach((id,k)=>{const rb=$(id),sl=slots[k],h=sl&&a.find(b=>b.p===sl[0]);
-    if(h){rb.style.left=(sl[1]-14)+'px';rb.style.setProperty('--rc',col(h));rb.classList.add('on')}else rb.classList.remove('on')});
+    if(h){rb.style.left='';rb.dataset.slot=sl[1];rb.style.setProperty('--rc',col(h));rb.classList.add('on')}else rb.classList.remove('on')});
   $('hDots').innerHTML=S.N?a.map(b=>`<i style="--p:${(b.p/S.N*100).toFixed(1)}%;--rc:${col(b)}"></i>`).join(''):'';
   $('hBmk').innerHTML=a.map(b=>`<button data-go="${b.p}" class="${vis.includes(b.p)?'here':''}" style="--rc:${col(b)}" title="${BM_NAME[b.c%7]} 책갈피로 이동" data-n="${BM_NAME[b.c%7]}"></button>`).join('');
   $('bmCount').textContent=`${a.length}/${BM_MAX}`;
@@ -1225,6 +1236,8 @@ $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
   sw($('hall'),d=>{if(d==='left'&&S.inHall&&!document.body.classList.contains('all-on'))showAll()});
   sw($('allShelf'),d=>{if(d==='right')hideAll()});
 }
+/* 화면 크기가 PC↔휴대폰 기준을 넘나들면 쪽 표시(% / 쪽번호)를 다시 맞춤 */
+{let wasPC=innerWidth>860;addEventListener('resize',()=>{const pc=innerWidth>860;if(pc!==wasPC){wasPC=pc;if(S.vol)updateUI();if(typeof fixArrow==='function')fixArrow()}})}
 /* ── 시작 ── */
 (async()=>{
   let c;try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;c=await r.json()}catch(e){c=FALLBACK}
