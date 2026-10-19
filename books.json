@@ -2,7 +2,11 @@
   "library": {
     "name": "비밀의 서고",
     "en": "The Secret Archive",
-    "quote": ["세상의 모든 이야기가 잠든 곳,", "책을 펼치는 자에게만", "문이 열린다."]
+    "quote": [
+      "세상의 모든 이야기가 잠든 곳,",
+      "책을 펼치는 자에게만",
+      "문이 열린다."
+    ]
   },
   "series": [
     {
@@ -16,7 +20,11 @@
           "title": "실버 애로우와 제국의 그림자",
           "spine": "실버 애로우",
           "cover": "books/vol01_cover.jpg",
-          "files": ["books/vol01_a.pdf", "books/vol01_b.pdf"]
+          "files": [
+            "books/vol01_a.pdf",
+            "books/vol01_b.pdf"
+          ],
+          "added": "2026-10-18"
         }
       ]
     }
