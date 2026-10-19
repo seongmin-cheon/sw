@@ -116,7 +116,7 @@ body.fs.idle{cursor:none}
 .leaf .back{transform:rotateY(180deg)}
 .cleaf{position:absolute;top:0;z-index:10;transform-style:preserve-3d;pointer-events:none}
 .cseg{position:absolute;top:0;transform-origin:left center;transform-style:preserve-3d}
-.cface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;outline:1px solid transparent;background-color:var(--paper);background-repeat:no-repeat}
+.cface{position:absolute;top:0;bottom:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-color:var(--paper);background-repeat:no-repeat}
 .cface i{position:absolute;inset:0;pointer-events:none}
 .cface.gutF::after,.cface.gutB::after{content:"";position:absolute;inset:0;pointer-events:none}
 .cface.gutF::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.2))}
@@ -457,12 +457,14 @@ function curlFlip(book,o){
     root.style.cssText=`left:${o.x*W}px;width:${W}px;height:${H}px;`+(o.mirror?'transform:scaleX(-1);':'');
     let parent=root,prevW=0;const segs=[];
     for(let i=0;i<SEG;i++){
-      const w=B[i+1]-B[i],last=i===SEG-1,ow=last?w:w+2; /* 다음 띠와 2px 겹침 */
+      const w=B[i+1]-B[i];
+      /* 그림 면을 양옆 이웃 띠 위로 3px씩 겹쳐 그려 경계의 틈(밝은 선)을 덮음 */
+      const L=i===0?0:3,R=i===SEG-1?0:3,fw=w+L+R;
       const g=document.createElement('div');g.className='cseg';
-      g.style.cssText=`left:${prevW}px;width:${ow}px;height:${H}px`;prevW=w;
-      const fx=o.mirror?W-B[i]-ow:B[i], bx=o.mirror?B[i]:W-B[i]-ow;
+      g.style.cssText=`left:${prevW}px;width:${w}px;height:${H}px`;prevW=w;
+      const fx=o.mirror?W-B[i+1]-R:B[i]-L, bx=o.mirror?B[i]-L:W-B[i+1]-R;
       const mk=(cls,url,x,extra)=>{const f=document.createElement('div');f.className='cface '+cls;
-        f.style.cssText=`background-image:${url?`url(${url})`:'none'};background-size:${W}px ${H}px;background-position:${-x}px 0;${extra}`;
+        f.style.cssText=`left:${-L}px;width:${fw}px;background-image:${url?`url(${url})`:'none'};background-size:${W}px ${H}px;background-position:${-x}px 0;${extra}`;
         const sh=document.createElement('i');f.appendChild(sh);g.appendChild(f);return sh};
       const fs=mk('cf',o.front,fx,o.mirror?'transform:scaleX(-1);':''),
             bs=mk('cb',o.back,bx,`transform:rotateY(180deg)${o.mirror?' scaleX(-1)':''};`);
