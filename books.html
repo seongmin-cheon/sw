@@ -98,6 +98,10 @@ body.ovl .hint{display:none}
 .nav-handle .hg i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9b7a43,#f1d58f);border-radius:2px;transition:width .4s ease}
 .nav-handle em{font-style:normal;color:var(--gold);min-width:34px;text-align:right}
 @media (max-width:420px){.nav-handle .hg{width:70px}}
+.nav-handle .hbtns{display:none}
+.nav-handle .hbtns button{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--gold);transition:background .2s}
+.nav-handle .hbtns button:hover{background:rgba(216,180,106,.18)}
+.nav-handle .hbtns svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 main.show-ui .nav-handle,main.show-title .nav-handle{opacity:0;transform:translate(-50%,-100%);pointer-events:none}
 
 
@@ -264,6 +268,26 @@ body.fs.idle{cursor:none}
 @media (max-width:640px){.h-shelf{--per:5;--bw:34px;--gap:8px}.h-niche{padding:70px 16px 12px}.h-epi{line-height:1.9}}
 @media (max-height:700px) and (min-width:641px){.h-epi{display:none}}
 @media (prefers-reduced-motion:reduce){.h-bg,.h-book.has{animation:none!important}#hall .h-inner *{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}.h-title{filter:drop-shadow(0 2px 10px rgba(0,0,0,.7))!important}}
+
+/* ═════ PC(마우스): 손잡이·메뉴를 오른쪽 세로로 ═════ */
+@media (min-width:861px){
+  body.ovl:not(.touch) main{padding:6px 34px 6px 6px}
+  body:not(.touch) .nav-handle{top:50%;left:auto;right:0;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:10px;
+    padding:14px 6px;border-radius:10px 0 0 10px;border:1px solid rgba(216,180,106,.3);border-right:0;box-shadow:-3px 0 10px rgba(0,0,0,.4)}
+  body:not(.touch) .nav-handle b{display:none}
+  body:not(.touch) .nav-handle .hbtns{display:flex;flex-direction:column;gap:4px;margin-top:2px;padding-top:8px;border-top:1px solid rgba(216,180,106,.2)}
+  body:not(.touch) .nav-handle em{min-width:0;text-align:center;font-size:12px;font-weight:600}
+  body:not(.touch) .nav-handle .hg{width:4px;height:110px}
+  body:not(.touch) .nav-handle .hg i{width:100%!important;height:var(--pc,0%);transition:height .4s ease;background:linear-gradient(180deg,#9b7a43,#f1d58f)}
+  body:not(.touch) main.show-ui .nav-handle,body:not(.touch) main.show-title .nav-handle{transform:translate(100%,-50%)}
+  body:not(.touch) main.show-title:not(.show-ui) .nav-handle{opacity:1;transform:translateY(-50%);pointer-events:auto}
+  body.ovl:not(.touch) .controls{left:auto;right:14px;top:50%;bottom:auto;width:auto;height:min(560px,82%);flex-direction:column;
+    border-radius:30px;padding:14px 7px;transform:translate(12px,-50%)}
+  body.ovl:not(.touch) main.show-ui .controls{transform:translate(0,-50%)}
+  body:not(.touch) .controls input[type=range]{writing-mode:vertical-lr;direction:ltr;width:auto;min-width:0;flex:1;min-height:80px}
+  body:not(.touch) .controls .pg{min-width:0;font-size:12px;font-weight:600;color:var(--gold);text-align:center}
+  body:not(.touch) .nav-handle{padding:14px 5px}
+}
 </style>
 </head>
 <body>
@@ -313,7 +337,7 @@ body.fs.idle{cursor:none}
     <button id="bMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button>
     <button id="bFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
-  <div class="nav-handle" id="navHandle">▾ <span class="hg"><i id="hBar"></i></span><b id="hPg">– / –</b><em id="hPct">0%</em></div>
+  <div class="nav-handle" id="navHandle">▾ <span class="hg"><i id="hBar"></i></span><b id="hPg">– / –</b><em id="hPct">0%</em><span class="hbtns"><button id="hMode" title="한 쪽 / 두 쪽 보기"><svg viewBox="0 0 24 24"><path d="M3 5h8v14H3zM13 5h8v14h-8z"/></svg></button><button id="hFull" title="전체 화면"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></span></div>
   <div class="hint">← → 키 · 페이지 클릭 · 스와이프로 넘기기</div>
 </main>
 
@@ -435,7 +459,7 @@ function updateUI(){
   const [l,r]=pagesOf(S.spread),b=$('book');
   b.classList.toggle('cover-only',!S.single&&!l);
   b.classList.toggle('back-only',!S.single&&!r);
-  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('hPct').textContent=pc+'%'}
+  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('navHandle').style.setProperty('--pc',pc+'%');$('hPct').textContent=pc+'%';if(!isTouch&&innerWidth>860)$('pg').textContent=pc+'%'}
   $('slider').max=maxSpread();$('slider').value=S.spread;
   $('bPrev').disabled=$('bFirst').disabled=S.spread<=0;$('bNext').disabled=S.spread>=maxSpread();
   store.set('pos_'+S.vol.id,l||r);
@@ -563,6 +587,9 @@ MAIN.addEventListener('mousemove',e=>{
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
 const isTouch=matchMedia('(hover:none)').matches||matchMedia('(pointer:coarse)').matches||(navigator.maxTouchPoints>1&&/Macintosh|iPad/.test(navigator.userAgent));document.body.classList.toggle('touch',isTouch);document.body.classList.add('ovl');
 $('navHandle').addEventListener('click',e=>{e.stopPropagation();toggleMenu()});
+$('hMode').addEventListener('click',e=>{e.stopPropagation();$('bMode').click()});
+$('hFull').addEventListener('click',e=>{e.stopPropagation();$('bFull').click()});
+const fixArrow=()=>{$('navHandle').firstChild.nodeValue=(!isTouch&&innerWidth>860)?'◂ ':'▾ '};fixArrow();addEventListener('resize',fixArrow);
 /* 메뉴 자동 숨김: 연 뒤 3초간 조작이 없으면 닫힘 (메뉴 위에 마우스·손가락이 있는 동안은 유지) */
 const AUTO_HIDE=3000;let menuHold=false;
 function closeMenu(){clearTimeout(PT.auto);MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}
@@ -587,7 +614,7 @@ $('stage').addEventListener('click',e=>{if(isTouch&&!e.target.closest('#book')&&
 function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
-$('slider').oninput=e=>{const s=+e.target.value;$('pg').textContent=(pagesOf(s).filter(Boolean).join('–'))+' / '+S.N};
+$('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=(!isTouch&&innerWidth>860)?Math.round(Math.max(...ps)/S.N*100)+'%':ps.join('–')+' / '+S.N};
 $('slider').onchange=e=>{const s=+e.target.value;goToPage(pagesOf(s).filter(Boolean)[0])};
 $('bMode').onclick=()=>{S.forceSingle=!S.single;layout()};
 $('bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()};
