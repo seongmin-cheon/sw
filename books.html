@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="only dark">
+<meta name="theme-color" content="#0b1028">
 <title>비밀의 서고</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -695,6 +697,18 @@ body.night .page.L::after{background:linear-gradient(90deg,transparent,rgba(0,0,
 body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.45))}
 #bNight.on{color:#fff3cf;background:rgba(216,180,106,.2)}
 #bNight.on svg{fill:currentColor}
+
+/* ═════ CHEONVERSE로 돌아가기(왼쪽 위, 천버스 파비콘) ═════ */
+#hall>.cv-btn{position:absolute;top:max(18px,2.2vw);left:max(18px,2.5vw);z-index:8;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 85%,#2a2114,#000 75%);border:1.5px solid rgba(201,164,92,.6);
+  box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 16px rgba(201,164,92,.3),inset 0 0 0 3px rgba(0,0,0,.8),inset 0 0 0 4px rgba(201,164,92,.25);
+  opacity:.75;transition:opacity .3s,transform .25s,box-shadow .3s;text-decoration:none}
+#hall>.cv-btn:hover{opacity:1;transform:scale(1.08);box-shadow:0 6px 18px rgba(0,0,0,.55),0 0 24px rgba(255,214,140,.55),inset 0 0 0 3px rgba(0,0,0,.8),inset 0 0 0 4px rgba(201,164,92,.4)}
+#hall>.cv-btn .cv-ic{width:40px;height:40px}
+#hall>.cv-btn .fab-lb{left:calc(100% + 10px);right:auto;transform:translate(-6px,-50%)}
+#hall>.cv-btn:hover .fab-lb{opacity:1;transform:translate(0,-50%)}
+@media (max-width:640px){#hall>.cv-btn{width:42px;height:42px;top:12px;left:12px}#hall>.cv-btn .cv-ic{width:32px;height:32px}#hall>.cv-btn .fab-lb{display:none}}
+:root{color-scheme:only dark}
 </style>
 </head>
 <body>
@@ -711,6 +725,7 @@ body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0
     <button class="h-all" id="hAllBtn" title="깊은 서가 입장"><i class="ha-glow"></i><span class="fab-ic"><svg viewBox="0 0 24 24"><path d="M5 21V10a7 7 0 0 1 14 0v11M3 21h18M9 21v-6a3 3 0 0 1 6 0v6"/><path d="M12 5.5v1.5"/></svg></span><span class="fab-lb">깊은 서가 입장</span></button>
   </div>
 </section>
+<a class="cv-btn" id="cvBtn" href="sam" title="CHEONVERSE로"><svg class="cv-ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="cvg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#b9b9c0"/></linearGradient><radialGradient id="b" cx=".5" cy=".9" r=".8"><stop offset="0" stop-color="#2a2114"/><stop offset="1" stop-color="#000"/></radialGradient></defs><ellipse cx="32" cy="32" rx="26" ry="8.5" fill="none" stroke="#c9a45c" stroke-width="2" opacity=".55" transform="rotate(-20 32 32)"/><path d="M44.3 21.7A16 16 0 1 0 44.3 42.3" fill="none" stroke="url(#cvg)" stroke-width="6.5" stroke-linecap="round"/><path d="M8.4 40.6A26 8.5 -20 0 0 55.6 23.4" fill="none" stroke="#c9a45c" stroke-width="2.2" stroke-linecap="round"/><circle cx="55.6" cy="23.4" r="3.6" fill="#ffe7b8"/></svg><span class="fab-lb">CHEONVERSE로</span></a>
 <section id="allShelf" aria-label="모든 책">
   <div class="a-bg"></div>
   <button class="a-back" id="aBack" title="비밀의 서고로 돌아가기"><i class="ha-glow"></i><span class="fab-ic"><svg viewBox="0 0 24 24"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 5 5v2"/></svg></span><span class="fab-lb">비밀의 서고로</span></button>
@@ -1145,7 +1160,7 @@ function allBuild(){
 addEventListener('resize',()=>{if(document.body.classList.contains('all-on'))allBuild()});
 function showAll(){allBuild();requestAnimationFrame(placeFabs);document.body.classList.add('all-on');S.inHall=true}
 function hideAll(instant){document.body.classList.remove('all-on')}
-$('hAllBtn').onclick=showAll;$('hall').appendChild($('hAllBtn'));$('aCase').before($('aBack'));{const w=document.createElement('div');w.className='a-wrap';$('aCase').before(w);w.append($('aCase'));$('allShelf').appendChild($('aBack'))}
+$('hAllBtn').onclick=showAll;$('hall').appendChild($('cvBtn'));$('hall').appendChild($('hAllBtn'));$('aCase').before($('aBack'));{const w=document.createElement('div');w.className='a-wrap';$('aCase').before(w);w.append($('aCase'));$('allShelf').appendChild($('aBack'))}
 /* 원형 버튼: 책장보다 조금 위 높이, 화면 좌우 끝(여백 두고) */
 function placeFabs(){
   const H=$('hall'),n=document.querySelector('.h-niche'),b=$('hAllBtn');
@@ -1266,7 +1281,7 @@ $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 /* ── 시작 ── */
 (async()=>{
   let c;try{const r=await fetch('books.json',{cache:'no-cache'});if(!r.ok)throw 0;c=await r.json()}catch(e){c=FALLBACK}
-  normalize(c);document.title=S.lib.name;
+  normalize(c);document.title=S.lib.name;if(S.lib.home)$('cvBtn').href=S.lib.home;
   buildShelf();layout(true);hallBuild();refreshAllBtns();
   $('bHall').onclick=backToHall;
 })();
