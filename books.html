@@ -553,10 +553,16 @@ MAIN.addEventListener('mousemove',e=>{
 MAIN.addEventListener('mouseleave',()=>{MAIN.classList.remove('show-title');if(isFs())peek('show-ui',600)});
 /* 터치: 화면 위·아래 가장자리를 누르면 제목·막대 표시 */
 const isTouch=matchMedia('(hover:none)').matches;document.body.classList.toggle('touch',isTouch);
-function toggleMenu(){const on=!MAIN.classList.contains('show-ui');clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
+function toggleMenu(){const on=!MAIN.classList.contains('show-ui')||(!isTouch&&isFs());clearTimeout(PT['show-ui']);clearTimeout(PT['show-title']);
   MAIN.classList.toggle('show-ui',on);MAIN.classList.toggle('show-title',on)}
 function hideMenu(){if(isTouch){MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}}
-$('hNext').onclick=()=>{hideMenu();flip(1)};$('hPrev').onclick=()=>{hideMenu();flip(-1)};$('hMid').onclick=toggleMenu;
+/* 터치: 화면 위·아래 띠(제목·막대 자리)를 누르면 쪽을 넘기지 않고 메뉴만 토글 */
+const edgeBand=e=>isTouch?(e.clientY<90||e.clientY>innerHeight-130):(isFs()&&e.clientY>innerHeight-130);
+$('hNext').onclick=e=>{if(edgeBand(e))return toggleMenu();hideMenu();flip(1)};
+$('hPrev').onclick=e=>{if(edgeBand(e))return toggleMenu();hideMenu();flip(-1)};
+$('hMid').onclick=toggleMenu;
+/* 책 바깥 빈 곳을 눌러도 메뉴 토글 */
+$('stage').addEventListener('click',e=>{if(isTouch&&!e.target.closest('#book'))toggleMenu()});
 /* 처음 한 번만 누르는 위치 안내 */
 function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
