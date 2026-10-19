@@ -270,7 +270,8 @@ body.fs.idle{cursor:none}
   body.ovl:not(.touch) main{padding:6px 34px 6px 6px}
   body:not(.touch) .nav-handle{top:50%;left:auto;right:0;bottom:auto;transform:translateY(-50%);flex-direction:column;gap:10px;
     padding:14px 6px;border-radius:10px 0 0 10px;border:1px solid rgba(216,180,106,.3);border-right:0;box-shadow:-3px 0 10px rgba(0,0,0,.4)}
-  body:not(.touch) .nav-handle b,body:not(.touch) .nav-handle em{min-width:0;text-align:center;font-size:11px;line-height:1.35;white-space:pre-line}
+  body:not(.touch) .nav-handle b{display:none}
+  body:not(.touch) .nav-handle em{min-width:0;text-align:center;font-size:12px;font-weight:600}
   body:not(.touch) .nav-handle .hg{width:4px;height:110px}
   body:not(.touch) .nav-handle .hg i{width:100%!important;height:var(--pc,0%);transition:height .4s ease;background:linear-gradient(180deg,#9b7a43,#f1d58f)}
   body:not(.touch) main.show-ui .nav-handle,body:not(.touch) main.show-title .nav-handle{transform:translate(100%,-50%)}
@@ -279,7 +280,7 @@ body.fs.idle{cursor:none}
     border-radius:30px;padding:14px 7px;transform:translate(12px,-50%)}
   body.ovl:not(.touch) main.show-ui .controls{transform:translate(0,-50%)}
   body:not(.touch) .controls input[type=range]{writing-mode:vertical-lr;direction:ltr;width:auto;min-width:0;flex:1;min-height:80px}
-  body:not(.touch) .controls .pg{min-width:0;font-size:11px;line-height:1.35;white-space:pre-line;text-align:center}
+  body:not(.touch) .controls .pg{min-width:0;font-size:12px;font-weight:600;color:var(--gold);text-align:center}
   body:not(.touch) .nav-handle{padding:14px 5px}
 }
 </style>
@@ -453,7 +454,7 @@ function updateUI(){
   const [l,r]=pagesOf(S.spread),b=$('book');
   b.classList.toggle('cover-only',!S.single&&!l);
   b.classList.toggle('back-only',!S.single&&!r);
-  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;if(!isTouch&&innerWidth>860){const t=$('pg').textContent.split(' / ');$('hPg').textContent=t[0]+'\n/'+t[1];$('pg').textContent=t[0]+'\n/'+t[1]}{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('navHandle').style.setProperty('--pc',pc+'%');$('hPct').textContent=pc+'%'}
+  $('pg').textContent=(S.single?r:[l,r].filter(Boolean).join('–'))+' / '+S.N;$('hPg').textContent=$('pg').textContent;{const cur=Math.max(l||0,r||0)||1,pc=Math.round(cur/S.N*100);$('hBar').style.width=pc+'%';$('navHandle').style.setProperty('--pc',pc+'%');$('hPct').textContent=pc+'%';if(!isTouch&&innerWidth>860)$('pg').textContent=pc+'%'}
   $('slider').max=maxSpread();$('slider').value=S.spread;
   $('bPrev').disabled=$('bFirst').disabled=S.spread<=0;$('bNext').disabled=S.spread>=maxSpread();
   store.set('pos_'+S.vol.id,l||r);
@@ -606,7 +607,7 @@ $('stage').addEventListener('click',e=>{if(isTouch&&!e.target.closest('#book')&&
 function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
-$('slider').oninput=e=>{const s=+e.target.value;$('pg').textContent=(pagesOf(s).filter(Boolean).join('–'))+' / '+S.N};
+$('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=(!isTouch&&innerWidth>860)?Math.round(Math.max(...ps)/S.N*100)+'%':ps.join('–')+' / '+S.N};
 $('slider').onchange=e=>{const s=+e.target.value;goToPage(pagesOf(s).filter(Boolean)[0])};
 $('bMode').onclick=()=>{S.forceSingle=!S.single;layout()};
 $('bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()};
