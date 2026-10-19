@@ -120,7 +120,7 @@ body.fs.idle{cursor:none}
 .vol-title strong{font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.02em}
 .vol-title small,.vol-title strong{text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.6)}
 .stage{position:relative;flex:1;width:100%;contain:size;display:flex;align-items:center;justify-content:center;min-height:0}
-.book{position:relative;width:calc(var(--pw)*2);height:var(--ph);perspective:2000px;transition:transform .5s ease}
+.book{position:relative;width:calc(var(--pw)*2);height:var(--ph);perspective:3500px;transition:transform .5s ease}
 .book.single{width:var(--pw)}
 .book.cover-only{transform:translateX(calc(var(--pw)*-.5))}
 .book.back-only{transform:translateX(calc(var(--pw)*.5))}
@@ -148,7 +148,7 @@ body.fs.idle{cursor:none}
 .cface{position:absolute;top:0;bottom:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-color:var(--paper);background-repeat:no-repeat}
 .cface i,.cface b{position:absolute;inset:0;pointer-events:none}
 .cface b{background-color:var(--paper);background-repeat:no-repeat}
-.cseg{will-change:transform}
+.cseg,.cface{will-change:transform}
 .cface.gutF::after,.cface.gutB::after{content:"";position:absolute;inset:0;pointer-events:none}
 .cface.gutF::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.2))}
 .cface.gutB::after{background:linear-gradient(90deg,transparent,rgba(0,0,0,.2))}
@@ -720,6 +720,12 @@ body.samdark .page img,body.samdark .cface b,body.samdark .leaf .face img{filter
 body.samdark.night .page img,body.samdark.night .cface b,body.samdark.night .leaf .face img{filter:none!important}
 body.night .cface b.nb,body.samdark .cface b.nb{filter:none!important}
 body.night .cface b.nb{background-color:#1d1a16!important}
+
+/* 캔버스 넘김: 밤 모드 색 필터는 그림 캔버스에만 */
+.cleaf canvas{pointer-events:none}
+body.night .cleaf .cimg{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
+body.samdark .cleaf .cimg{filter:invert(1) hue-rotate(180deg)!important}
+body.samdark.night .cleaf .cimg{filter:none!important}
 </style>
 </head>
 <body>
@@ -961,60 +967,83 @@ async function flip(dir){
 }
 
 
-/* ── 종이가 휘었다 펴지는 넘김: 장을 세로 띠로 잘라 경첩처럼 이어 붙이고 띠마다 각도를 다르게 줌 ── */
-const SEG=30;
-function curlFlip(book,o){
+/* ── 종이가 휘었다 펴지는 넘김: 캔버스에 직접 그림(3D 레이어를 쓰지 않아 기기·브라우저마다 깨지지 않음) ──
+   장을 가는 세로 띠로 나눠 띠마다 각도를 다르게 주고, 원근(가까울수록 크게)을 계산해 그림 조각과 음영을 그린다.
+   그림은 아래 캔버스(밤 모드 색 필터 적용), 음영은 위 캔버스(필터 없음)에 그려 밤에도 음영이 어둡게 유지된다. */
+const SEG=30,CSTRIP=120,PERSP=2000;
+const loadImg=u=>new Promise(r=>{if(!u)return r(null);const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=u});
+async function curlFlip(book,o){
+  const pR=book.querySelector('.page.R'),W=pR.offsetWidth,H=pR.offsetHeight,BW=book.offsetWidth;
+  const [fi,bi]=await Promise.all([loadImg(o.front),loadImg(o.back)]);
+  const hx=o.x*W;                                    /* 제본선(경첩) 위치(책 기준) */
+  const CW=Math.ceil(W*2.3),CH=Math.ceil(H*1.5),cx=CW/2,cy=(CH-H)/2; /* 캔버스 안에서 경첩의 위치 */
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const root=document.createElement('div');root.className='cleaf';
+  root.style.cssText=`left:${hx-cx}px;top:${-cy}px;width:${CW}px;height:${CH}px;transform-style:flat;`+(o.mirror?'transform:scaleX(-1);':'');
+  const mkC=cls=>{const c=document.createElement('canvas');c.className=cls;c.width=Math.round(CW*dpr);c.height=Math.round(CH*dpr);c.style.cssText=`position:absolute;inset:0;width:${CW}px;height:${CH}px`;root.appendChild(c);const x=c.getContext('2d');return x};
+  const ci=mkC('cimg'),cs=mkC('cshade');
+  book.appendChild(root);
+  /* 원근 기준점(책 가운데)을 경첩 기준 좌표로. 거울 모드면 좌우 반전 */
+  let ox=BW/2-hx;if(o.mirror)ox=-ox;const oy=H/2;
+  const proj=(x,y,z)=>{const k=PERSP/(PERSP-z);return [cx+ox+(x-ox)*k,cy+oy+(y-oy)*k]};
+  /* 거울 모드에서는 그림이 다시 뒤집혀 보이지 않도록 미리 좌우 반전한 그림을 씀 */
+  const flipImg=im=>{if(!im||!o.mirror)return im;const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(im,0,0);return c};
+  const F=flipImg(fi),Bk=flipImg(bi);
+  const iw=im=>im?(im.naturalWidth||im.width):0,ih=im=>im?(im.naturalHeight||im.height):0;
+  const PAPER=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#f4ead6';
+  const xs=[];for(let i=0;i<=CSTRIP;i++)xs.push(i*W/CSTRIP);
+  const gut=x=>o.gut?Math.max(0,.22*(1-x/(.09*W))):0;
+  const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720;
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  /* 띠 조각 하나를 사변형(위·아래 네 꼭짓점)에 맞춰 그림: 가는 띠라 평행사변형 근사로 충분 */
+  const quad=(ctx,P0,P1,Q0)=>{ctx.beginPath();ctx.moveTo(P0[0],P0[1]);ctx.lineTo(P1[0],P1[1]);ctx.lineTo(P1[0]+Q0[0]-P0[0],P1[1]+Q0[1]-P0[1]);ctx.lineTo(Q0[0],Q0[1]);ctx.closePath()};
   return new Promise(res=>{
-    const W=book.querySelector('.page.R').offsetWidth,H=book.querySelector('.page.R').offsetHeight;
-    /* 띠 경계를 정수 픽셀로 → 틈·줄무늬 방지 */
-    const B=[];for(let i=0;i<=SEG;i++)B.push(Math.round(i*W/SEG));
-    const root=document.createElement('div');root.className='cleaf';
-    root.style.cssText=`left:${o.x*W}px;width:${W}px;height:${H}px;`+(o.mirror?'transform:scaleX(-1);':'');
-    let parent=root,prevW=0;const segs=[];
-    for(let i=0;i<SEG;i++){
-      const w=B[i+1]-B[i];
-      /* 그림 면을 양옆 이웃 띠 위로 3px씩 겹쳐 그려 경계의 틈(밝은 선)을 덮음 */
-      const L=i===0?0:1,R=i===SEG-1?0:1,fw=w+L+R;
-      const g=document.createElement('div');g.className='cseg';
-      g.style.cssText=`left:${prevW}px;width:${w}px;height:${H}px`;prevW=w;
-      const fx=o.mirror?W-B[i+1]-R:B[i]-L, bx=o.mirror?B[i]-L:W-B[i+1]-R;
-      const mk=(cls,url,x,extra)=>{const f=document.createElement('div');f.className='cface '+cls;
-        f.style.cssText=`left:${-L}px;width:${fw}px;${extra}`;
-        const im=document.createElement('b');if(!url)im.className='nb';im.style.cssText=`background-image:${url?`url(${url})`:'none'};background-size:${W}px ${H}px;background-position:${-x}px 0`;f.appendChild(im);
-        const sh=document.createElement('i');f.appendChild(sh);g.appendChild(f);return sh};
-      const fs=mk('cf',o.front,fx,o.mirror?'transform:scaleX(-1);':''),
-            bs=mk('cb',o.back,bx,`transform:rotateY(180deg)${o.mirror?' scaleX(-1)':''};`);
-      parent.appendChild(g);segs.push({g,fs,bs});parent=g;
-    }
-    /* 제본선 음영: 고정 페이지와 똑같이 제본선에서 0.22 → 폭 9% 지점에서 0 */
-    const gut=x=>o.gut?Math.max(0,.22*(1-x/(.09*W))):0;
-    book.appendChild(root);
-    /* 음영 방향: 띠 안에서 이웃 띠 쪽으로 부드럽게 이어지도록 */
-    const fDir=o.mirror?270:90,bDir=o.mirror?90:270;
-    const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720;let t0=0;
-    const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-    const phis=new Array(SEG+1);
+    let t0=0;
     function frame(now){
-      if(!t0)t0=now;let t=Math.min(1,(now-t0)/D);const tt=o.reverse?1-t:t;
+      if(!t0)t0=now;const t=Math.min(1,(now-t0)/D),tt=o.reverse?1-t:t;
       const base=180*ease(tt),bend=140*Math.sin(Math.PI*tt);
-      let prev=0;
-      for(let i=0;i<=SEG;i++){
-        let phi=base+bend*(Math.pow(Math.min(i,SEG-1)/(SEG-1),1.6)-.35);phi=Math.max(prev,Math.min(180,Math.max(0,phi)));
-        phis[i]=phi;prev=phi;
+      /* 띠마다 각도(제본선 쪽은 덜, 바깥쪽은 더 휘게) */
+      const ph=[];let prev=0;
+      for(let i=0;i<CSTRIP;i++){let p=base+bend*(Math.pow(i/(CSTRIP-1),1.6)-.35);p=Math.max(prev,Math.min(180,Math.max(0,p)));ph.push(p);prev=p}
+      const lift=1-Math.sin(ph[0]*Math.PI/180)*.6;
+      /* 3D 위치 누적 */
+      const P=[[0,0]];for(let i=0;i<CSTRIP;i++){const r=ph[i]*Math.PI/180,w=xs[i+1]-xs[i];P.push([P[i][0]+w*Math.cos(r),P[i][1]+w*Math.sin(r)])}
+      const segs=[];
+      for(let i=0;i<CSTRIP;i++){
+        const [x0,z0]=P[i],[x1,z1]=P[i+1];
+        const a0=proj(x0,0,z0),a1=proj(x1,0,z1),b0=proj(x0,H,z0),b1=proj(x1,H,z1);
+        const front=a1[0]>=a0[0];
+        const s=Math.sin(ph[i]*Math.PI/180)*Math.min(1,.35+i/SEG*SEG/CSTRIP);
+        const sh=front?Math.min(.42,.28*s+gut(xs[i])*lift):Math.min(.38,.22*s+gut(xs[i])*lift);
+        segs.push({i,z:(z0+z1)/2,a0,a1,b0,b1,front,sh});
       }
-      prev=0;
-      segs.forEach((sg,i)=>{
-        sg.g.style.transform=`rotateY(${-(phis[i]-prev)}deg)`;prev=phis[i];
-        /* 장이 제본선에서 들릴수록 제본선 음영은 옅어지고(틈이 벌어짐), 휨 음영은 바깥쪽으로 갈수록만 진해짐 */
-        const lift=1-Math.sin(phis[0]*Math.PI/180)*.6,a=Math.sin(phis[i]*Math.PI/180)*Math.min(1,.35+i/SEG),b=Math.sin(phis[i+1]*Math.PI/180)*Math.min(1,.35+(i+1)/SEG),ga=gut(B[i])*lift,gb=gut(B[i+1])*lift;
-        sg.fs.style.background=`linear-gradient(${fDir}deg,rgba(0,0,0,${Math.min(.42,.28*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.42,.28*b+gb).toFixed(3)}))`;
-        sg.bs.style.background=`linear-gradient(${bDir}deg,rgba(0,0,0,${Math.min(.38,.22*a+ga).toFixed(3)}),rgba(0,0,0,${Math.min(.38,.22*b+gb).toFixed(3)}))`;
-      });
+      segs.sort((p,q)=>p.z-q.z);
+      ci.setTransform(1,0,0,1,0,0);ci.clearRect(0,0,ci.canvas.width,ci.canvas.height);
+      cs.setTransform(1,0,0,1,0,0);cs.clearRect(0,0,cs.canvas.width,cs.canvas.height);
+      ci.setTransform(dpr,0,0,dpr,0,0);cs.setTransform(dpr,0,0,dpr,0,0);
+      for(const g of segs){
+        const im=g.front?F:Bk;
+        /* 띠 경계 틈을 막으려고 0.6px 넓혀 그림 */
+        const ex=g.a1[0]>=g.a0[0]?.6:-.6;
+        const A0=[g.a0[0]-ex,g.a0[1]],A1=[g.a1[0]+ex,g.a1[1]],B0=[g.b0[0]-ex,g.b0[1]];
+        ci.save();quad(ci,A0,A1,B0);ci.clip();
+        if(im){
+          const sw=iw(im)/W,shh=ih(im)/H;
+          /* 앞면은 왼→오른쪽, 뒷면은 오른→왼쪽으로 그림 조각을 가져옴 */
+          const u0=g.front?xs[g.i]:W-xs[g.i+1],u1=g.front?xs[g.i+1]:W-xs[g.i];
+          const O=g.front?g.a0:g.a1,X=g.front?g.a1:g.a0,Y=g.front?g.b0:g.b1;
+          const du=u1-u0;
+          ci.transform((X[0]-O[0])/du,(X[1]-O[1])/du,(Y[0]-O[0])/H,(Y[1]-O[1])/H,O[0],O[1]);
+          const e0=Math.min(1,u0),e1=Math.min(1,W-u1);ci.drawImage(im,(u0-e0)*sw,0,(du+e0+e1)*sw,ih(im),-e0,0,du+e0+e1,H);
+        }else{ci.fillStyle=PAPER;ci.fill()}
+        ci.restore();
+        /* 음영: 뒤쪽 띠의 음영을 지우고 이 띠 음영을 칠함 */
+        quad(cs,A0,A1,B0);cs.globalCompositeOperation='destination-out';cs.fillStyle='#000';cs.fill();
+        cs.globalCompositeOperation='source-over';if(g.sh>.003){cs.fillStyle=`rgba(0,0,0,${g.sh.toFixed(3)})`;cs.fill()}
+      }
       if(t<1)requestAnimationFrame(frame);else res();
     }
-    /* 새 장의 그림이 화면 밖 타일까지 다 그려질 시간을 2프레임 주고 시작(아랫부분 계단 깨짐 방지) */
-    root.style.visibility='hidden';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{root.style.visibility='';requestAnimationFrame(frame)}));
+    requestAnimationFrame(frame);
   });
 }
 
