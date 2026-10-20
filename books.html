@@ -1023,14 +1023,18 @@ async function flip(dir){
 /* ── 종이가 휘었다 펴지는 넘김: 캔버스에 직접 그림(3D 레이어를 쓰지 않아 기기·브라우저마다 깨지지 않음) ──
    장을 가는 세로 띠로 나눠 띠마다 각도를 다르게 주고, 원근(가까울수록 크게)을 계산해 그림 조각과 음영을 그린다.
    그림은 아래 캔버스(밤 모드 색 필터 적용), 음영은 위 캔버스(필터 없음)에 그려 밤에도 음영이 어둡게 유지된다. */
-const SEG=30,CSTRIP=120,PERSP=2000;
+const SEG=30,PERSP=2000;
+/* 넘김용으로 좌우 반전·밤 색 변환한 그림을 재사용(최근 8장) */
+const CURL_CACHE=new Map();
 const loadImg=u=>new Promise(r=>{if(!u)return r(null);const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=u});
 async function curlFlip(book,o){
   const pR=book.querySelector('.page.R'),W=pR.offsetWidth,H=pR.offsetHeight,BW=book.offsetWidth;
   const [fi,bi]=await Promise.all([loadImg(o.front),loadImg(o.back)]);
   const hx=o.mirror?(o.x+1)*W:o.x*W;  /* 거울(뒤로 넘김)일 때 경첩은 가운데 제본선 */                                    /* 제본선(경첩) 위치(책 기준) */
   const CW=Math.ceil(W*2.3),CH=Math.ceil(H*1.5),cx=CW/2,cy=(CH-H)/2; /* 캔버스 안에서 경첩의 위치 */
-  const dpr=Math.min(window.devicePixelRatio||1,2);
+  /* 휴대폰·태블릿은 넘김을 가볍게: 그림판 배율 1.5배까지, 띠 70개 (PC는 2배, 120개) */
+  const TOUCH=typeof isTouch!=='undefined'&&isTouch;
+  const dpr=Math.min(window.devicePixelRatio||1,TOUCH?1.5:2),CSTRIP=TOUCH?70:120;
   const root=document.createElement('div');root.className='cleaf';
   root.style.cssText=`left:${hx-cx}px;top:${-cy}px;width:${CW}px;height:${CH}px;transform-style:flat;`+(o.mirror?'transform:scaleX(-1);':'');
   const mkC=cls=>{const c=document.createElement('canvas');c.className=cls;c.width=Math.round(CW*dpr);c.height=Math.round(CH*dpr);c.style.cssText=`position:absolute;inset:0;width:${CW}px;height:${CH}px`;root.appendChild(c);const x=c.getContext('2d');return x};
@@ -1048,7 +1052,12 @@ async function curlFlip(book,o){
   const flipImg=im=>{if(!im||!o.mirror)return im;const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(im,0,0);return c};
   const filt=im=>{if(!im||!canFil)return im;const c=document.createElement('canvas');c.width=iw(im);c.height=ih(im);const x=c.getContext('2d');x.filter=FIL;x.drawImage(im,0,0);return c};
   const iw=im=>im?(im.naturalWidth||im.width):0,ih=im=>im?(im.naturalHeight||im.height):0;
-  const F=filt(flipImg(fi)),Bk=filt(flipImg(bi));
+  const prep=(url,im)=>{if(!im)return null;if(!o.mirror&&!canFil)return im;
+    const k=url+'|'+(o.mirror?1:0)+'|'+(canFil?FIL:'');if(CURL_CACHE.has(k))return CURL_CACHE.get(k);
+    const c=filt(flipImg(im));CURL_CACHE.set(k,c);
+    if(CURL_CACHE.size>8){const old=CURL_CACHE.keys().next().value;const oc=CURL_CACHE.get(old);if(oc&&oc.width!==undefined&&oc!==im)oc.width=0;CURL_CACHE.delete(old)}
+    return c};
+  const F=prep(o.front,fi),Bk=prep(o.back,bi);
   const PAPER=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#f4ead6';
   let PAPER_F=PAPER;if(canFil){const c=document.createElement('canvas');c.width=c.height=2;const x=c.getContext('2d');x.filter=FIL;x.fillStyle=PAPER;x.fillRect(0,0,2,2);const d=x.getImageData(0,0,1,1).data;PAPER_F=`rgb(${d[0]},${d[1]},${d[2]})`}
   const xs=[];for(let i=0;i<=CSTRIP;i++)xs.push(i*W/CSTRIP);
