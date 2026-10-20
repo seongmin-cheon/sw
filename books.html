@@ -724,6 +724,19 @@ body.night .cface b.nb{background-color:#1d1a16!important}
 
 /* 캔버스 넘김: 밤 모드 색 필터는 그림 캔버스에만 */
 .cleaf canvas{pointer-events:none}
+
+/* 손가락으로 쓰는 큰 화면(태블릿): 위쪽 손잡이를 화면 크기에 맞게 키우고, 쪽 번호 대신 %만 */
+.nav-handle b#hPg{display:none!important}
+@media (min-width:861px){body.touch .nav-handle{zoom:1.35}}
+@media (min-width:1300px){body.touch .nav-handle{zoom:1.6}}
+
+/* 탭 안내: 글씨를 각 영역의 바깥 가장자리 쪽에 두고, 갈 수 없는 방향(첫 쪽의 이전, 마지막 쪽의 다음)은 숨김 */
+/* 탭 안내: 실제로 보이는 쪽 위에만 깔고, 글씨는 각 영역 한가운데. 갈 수 없는 방향은 빼서 남은 영역 가운데에 */
+.book.cover-only:not(.single) .tapguide{left:50%}
+.book.back-only:not(.single) .tapguide{right:50%}
+.tapguide.no-prev div:first-child,.tapguide.no-next div:last-child{display:none}
+.tapguide.no-prev div:last-child,.tapguide.no-next div:first-child{border:0}
+.tapguide div{font-size:clamp(14px,1.4vw,20px)}
 </style>
 </head>
 <body>
@@ -1124,7 +1137,7 @@ $('hMid').onclick=()=>{};
 /* 책 바깥 빈 곳을 눌러도 메뉴 토글 */
 $('stage').addEventListener('click',e=>{if(isTouch&&!e.target.closest('#book')&&MAIN.classList.contains('show-ui'))hideMenu()});
 /* 처음 한 번만 누르는 위치 안내 */
-function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
+function tapGuideOnce(){if(!isTouch||store.get('tapGuided'))return;store.set('tapGuided',1);const g=$('tapGuide');g.classList.toggle('no-prev',S.spread<=0);g.classList.toggle('no-next',S.spread>=maxSpread());g.classList.add('on');setTimeout(()=>g.classList.remove('on'),2600)}
 $('bNext').onclick=()=>flip(1);$('bPrev').onclick=()=>flip(-1);
 $('bFirst').onclick=()=>goToPage(1);
 $('slider').oninput=e=>{const s=+e.target.value,ps=pagesOf(s).filter(Boolean);$('pg').textContent=Math.round(Math.max(...ps)/S.N*100)+'%'};
