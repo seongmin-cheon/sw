@@ -934,13 +934,19 @@ async function openVolume(id){
 }
 
 /* ── 쪽 렌더링 ── */
+let RQ=Promise.resolve();
 function renderPage(n){
   if(!n||n<1||n>S.N)return Promise.resolve(null);
   const key=n+'@'+S.renderW;
   if(S.cache.has(key))return Promise.resolve(S.cache.get(key));
-  const job=(async()=>{
+  /* 한 번에 한 쪽씩만 그림(동시에 여러 장을 크게 그리면 태블릿·휴대폰 메모리가 모자라 글자·배경이 빠진 채 그려짐) */
+  const job=(RQ=RQ.catch(()=>{}).then(async()=>{
     const {d,i}=S.map[n-1];const pg=await d.getPage(i);
-    const vp1=pg.getViewport({scale:1});const W=S.renderW,vp=pg.getViewport({scale:W*2/vp1.width});
+    const vp1=pg.getViewport({scale:1});const W=S.renderW;
+    /* 그림판 크기 상한: 휴대폰·태블릿 800만, PC 1600만 화소. 넘으면 2배 대신 1~2배 사이로 낮춰 그림 */
+    const ratio=vp1.height/vp1.width,maxPx=(typeof isTouch!=='undefined'&&isTouch)?8e6:16e6;
+    let k=2;while(k>1&&(W*k)*(W*k*ratio)>maxPx)k-=.25;
+    const vp=pg.getViewport({scale:W*k/vp1.width});
     const cv=document.createElement('canvas');cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
     await pg.render({canvasContext:cv.getContext('2d',{alpha:false}),viewport:vp}).promise;
     /* 2배로 그린 뒤 고품질 축소 → 화면 픽셀과 1:1로 표시 */
@@ -951,7 +957,7 @@ function renderPage(n){
     const url=URL.createObjectURL(blob);S.cache.set(key,url);
     if(S.cache.size>36){const k=S.cache.keys().next().value;URL.revokeObjectURL(S.cache.get(k));S.cache.delete(k)}
     return url;
-  })();
+  }));
   S.cache.set(key,job);
   job.then(u=>S.cache.set(key,u)).catch(()=>S.cache.delete(key));
   return job;
