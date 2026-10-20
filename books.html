@@ -973,7 +973,7 @@ const loadImg=u=>new Promise(r=>{if(!u)return r(null);const im=new Image();im.on
 async function curlFlip(book,o){
   const pR=book.querySelector('.page.R'),W=pR.offsetWidth,H=pR.offsetHeight,BW=book.offsetWidth;
   const [fi,bi]=await Promise.all([loadImg(o.front),loadImg(o.back)]);
-  const hx=o.x*W;                                    /* 제본선(경첩) 위치(책 기준) */
+  const hx=o.mirror?(o.x+1)*W:o.x*W;  /* 거울(뒤로 넘김)일 때 경첩은 가운데 제본선 */                                    /* 제본선(경첩) 위치(책 기준) */
   const CW=Math.ceil(W*2.3),CH=Math.ceil(H*1.5),cx=CW/2,cy=(CH-H)/2; /* 캔버스 안에서 경첩의 위치 */
   const dpr=Math.min(window.devicePixelRatio||1,2);
   const root=document.createElement('div');root.className='cleaf';
