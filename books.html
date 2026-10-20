@@ -135,7 +135,7 @@ body.fs.idle{cursor:none}
 .page.L::after,.page.R::after{content:"";position:absolute;top:0;bottom:0;width:9%;pointer-events:none}
 .page.L::after{right:0;background:linear-gradient(90deg,transparent,rgba(0,0,0,.22))}
 /* 원고 PDF의 왼쪽 쪽에는 제본선 음영이 이미 그려져 있어, 오른쪽 쪽 음영을 같은 모양으로 맞춤 */
-.page.R::after{left:0;background:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.28) 8%,rgba(0,0,0,.23) 15%,rgba(0,0,0,.17) 30%,rgba(0,0,0,.09) 58%,transparent 100%)}
+.page.R::after{left:0;background:linear-gradient(90deg,rgba(0,0,0,.40) 0%,rgba(0,0,0,.32) 8%,rgba(0,0,0,.25) 15%,rgba(0,0,0,.17) 30%,rgba(0,0,0,.09) 58%,transparent 100%)}
 .book.single .page.R::after{display:none}
 .page.loading{background:var(--paper) repeating-linear-gradient(0deg,transparent 0 22px,rgba(120,90,50,.05) 22px 23px)}
 
@@ -696,7 +696,7 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 body.night .page img,body.night .cface b,body.night .leaf .face img{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
 body.night .page,body.night .cface,body.night .cface b,body.night .leaf .face{background-color:#1d1a16}
 body.night .page.L::after{background:linear-gradient(270deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.56) 8%,rgba(0,0,0,.52) 15%,rgba(0,0,0,.45) 30%,rgba(0,0,0,.26) 58%,transparent 100%)}
-body.night .page.R::after{background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(0,0,0,.3) 30%,transparent)}
+body.night .page.R::after{background:linear-gradient(90deg,rgba(0,0,0,.58),rgba(0,0,0,.36) 30%,transparent)}
 #bNight.on{color:#fff3cf;background:rgba(216,180,106,.2)}
 #bNight.on svg{fill:currentColor}
 
@@ -995,7 +995,7 @@ async function curlFlip(book,o){
   const xs=[];for(let i=0;i<=CSTRIP;i++)xs.push(i*W/CSTRIP);
   const NK=document.body.classList.contains('night')?1.9:1;
   /* 제본선 음영: 왼쪽 쪽 그림(원고에 음영 있음)은 옅게, 오른쪽 쪽 그림은 고정 페이지와 같은 모양으로 */
-  const RP=[[0,.35],[.08,.28],[.15,.23],[.3,.17],[.58,.09],[1,0]];
+  const RP=[[0,.40],[.08,.32],[.15,.25],[.3,.17],[.58,.09],[1,0]];
   const gutR=x=>{const f=x/(.09*W);if(f>=1)return 0;for(let k=1;k<RP.length;k++)if(f<=RP[k][0]){const [a,va]=RP[k-1],[b,vb]=RP[k];return va+(vb-va)*(f-a)/(b-a)}return 0};
   const gutL=x=>Math.max(0,.22*(1-x/(.09*W)));
   const gutF=x=>o.gut?NK*(o.mirror?gutL(x):gutR(x)):0,gutB=x=>o.gut?NK*(o.mirror?gutR(x):gutL(x)):0;
