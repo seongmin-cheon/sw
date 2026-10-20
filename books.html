@@ -745,6 +745,32 @@ main.show-ui .nav-handle,main.show-title .nav-handle{transform:translate(-50%,10
 body.ovl .controls{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));transform:translate(-50%,12px)}
 body.ovl main.show-ui .controls{transform:translate(-50%,0)}
 body.touch .controls{width:min(640px,calc(100% - 20px))}
+
+/* 휴대폰·태블릿: 아래 손잡이에 서고 아이콘 항상 표시 */
+body.touch #hShelf{display:grid!important}
+
+/* 책장 머리: 비밀의 서고(메인) · 깊은 서가 — 같은 글꼴·금빛 톤의 제목 링크 */
+aside .s-link{cursor:pointer;transition:filter .2s,transform .2s}
+aside .s-link:hover{filter:brightness(1.18)}
+aside .s-link:active{transform:scale(.98)}
+aside .s-stacks{margin:-6px 0 22px}
+aside .s-stacks h1{font-size:19px}
+aside .s-stacks::after{display:none}
+
+/* 책장: 내용만 안쪽에서 스크롤, 오른쪽 '책장' 탭은 스크롤과 무관하게 항상 위아래 끝까지 한 색 */
+aside{overflow:hidden!important;padding:0!important}
+aside .side-in{position:absolute;inset:0 16px 0 0;overflow-y:auto;overflow-x:hidden;padding:22px 14px 28px 18px;overscroll-behavior:contain}
+@media (max-width:860px){aside .side-in{right:0;padding-right:18px}}
+
+/* 책장 제목 링크: 은은하게 숨 쉬는 금빛 + 주기적으로 지나가는 빛줄기, 가리키면 더 밝게 */
+aside .s-link{position:relative;overflow:hidden;border-radius:10px;padding:4px 0 6px;animation:sBreath 2.2s ease-in-out infinite}
+aside .s-stacks{animation-delay:1.1s}
+@keyframes sBreath{0%,100%{filter:drop-shadow(0 0 0 rgba(255,214,140,0))}50%{filter:drop-shadow(0 0 7px rgba(255,214,140,.85)) drop-shadow(0 0 16px rgba(255,190,90,.5)) brightness(1.25)}}
+aside .s-link p::after{content:" ›";display:inline-block;opacity:.55;transition:transform .25s,opacity .25s}
+aside .s-link:hover{animation-play-state:paused;filter:drop-shadow(0 0 12px rgba(255,214,140,.75)) brightness(1.2)}
+aside .s-link:hover p::after{opacity:1;transform:translateX(4px)}
+aside .s-link:hover h1{letter-spacing:.16em}
+aside .s-link h1{transition:letter-spacing .3s}
 </style>
 </head>
 <body>
@@ -770,12 +796,14 @@ body.touch .controls{width:min(640px,calc(100% - 20px))}
 </section>
 <aside id="side">
   <div class="handle">책장 ▸</div>
-  <div class="brand"><h1 id="sName">비밀의 서고</h1><p id="sSub">The Secret Archive</p></div>
-  <button class="s-all" id="sAllBtn">전체 책 보기 <span>→</span></button>
+  <div class="side-in">
+  <div class="brand s-link" id="sHall" title="비밀의 서고로"><h1 id="sName">비밀의 서고</h1><p id="sSub">The Secret Archive</p></div>
+  <div class="brand s-link s-stacks" id="sAllBtn" title="깊은 서가로"><h1>깊은 서가</h1><p>The Inner Stacks</p></div>
   <div class="cabinet" id="cabinet"></div>
   <div class="cur" id="cur"><img id="curCover" alt=""><div><small id="curNo"></small><b id="curTitle"></b></div></div>
   <div class="bmbox" id="bmBox"><div class="bmhead">책갈피 <span id="bmCount">0/7</span></div><ul id="bmList"></ul></div>
   <div class="side-foot">최근에 읽은 책이 꽂힙니다</div>
+  </div>
 </aside>
 <div class="scrim" id="scrim"></div>
 
@@ -1246,6 +1274,7 @@ function placeFabs(){
 }
 addEventListener('resize',placeFabs);setTimeout(placeFabs,900);setTimeout(placeFabs,2000);$('aBack').onclick=()=>hideAll();
 $('sAllBtn').onclick=()=>{backToHall();setTimeout(showAll,60)};
+$('sHall').onclick=()=>{backToHall();hideAll()};
 function refreshAllBtns(){const on=S.books.length>0;$('hAllBtn').style.display=on?'':'none';$('sAllBtn').style.display=on?'':'none'}
 function backToHall(){setTimeout(placeFabs,500);
   const hall=$('hall');document.body.classList.remove('drawer');
@@ -1320,10 +1349,6 @@ $('bBm').addEventListener('click',bmToggle);
 $('hBmk').addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(!t)return;e.stopPropagation();goToPage(+t.dataset.go);toast(`${t.dataset.n} 책갈피가 머문 곳으로 돌아왔어요`)});
 $('hBm').addEventListener('click',e=>{e.stopPropagation();bmToggle()});
 
-/* 숨은 입구: 책장 상단 '비밀의 서고'를 1.5초 안에 5번 누르면 책 추가 도우미를 새 창으로 */
-{let n=0,t=0;const br=document.querySelector('aside .brand');br.style.cursor='default';
-  br.addEventListener('click',e=>{e.stopPropagation();const now=Date.now();n=(now-t<1500)?n+1:1;t=now;
-    if(n>=5){n=0;window.open('admin.html','_blank','noopener')}})}
 /* 숨은 입구 2: 깊은 서가 제목을 1.5초 안에 5번 누르면 책 추가 도우미 */
 {let n=0,t=0;const tt=document.querySelector('.a-title b');tt.style.cursor='default';tt.style.userSelect='none';
   tt.addEventListener('click',e=>{const now=Date.now();n=(now-t<1500)?n+1:1;t=now;if(n>=5){n=0;window.open('admin.html','_blank','noopener')}})}
