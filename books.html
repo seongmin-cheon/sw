@@ -724,9 +724,6 @@ body.night .cface b.nb{background-color:#1d1a16!important}
 
 /* 캔버스 넘김: 밤 모드 색 필터는 그림 캔버스에만 */
 .cleaf canvas{pointer-events:none}
-body.night .cleaf .cimg{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
-body.samdark .cleaf .cimg{filter:invert(1) hue-rotate(180deg)!important}
-body.samdark.night .cleaf .cimg{filter:none!important}
 </style>
 </head>
 <body>
@@ -982,23 +979,29 @@ async function curlFlip(book,o){
   const root=document.createElement('div');root.className='cleaf';
   root.style.cssText=`left:${hx-cx}px;top:${-cy}px;width:${CW}px;height:${CH}px;transform-style:flat;`+(o.mirror?'transform:scaleX(-1);':'');
   const mkC=cls=>{const c=document.createElement('canvas');c.className=cls;c.width=Math.round(CW*dpr);c.height=Math.round(CH*dpr);c.style.cssText=`position:absolute;inset:0;width:${CW}px;height:${CH}px`;root.appendChild(c);const x=c.getContext('2d');return x};
-  const ci=mkC('cimg'),cs=mkC('cshade');
+  const ci=mkC('ccurl');
+  /* 밤 모드 색 바꿈은 그림에만 직접 적용(음영은 그대로 어둡게) */
+  const bc=document.body.classList,night=bc.contains('night'),sam=bc.contains('samdark');
+  const FIL=sam?(night?'none':'invert(1) hue-rotate(180deg)'):(night?'invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)':'none');
+  const canFil=FIL!=='none'&&('filter' in ci);
+  if(FIL!=='none'&&!canFil)ci.canvas.style.filter=FIL;
   book.appendChild(root);
   /* 원근 기준점(책 가운데)을 경첩 기준 좌표로. 거울 모드면 좌우 반전 */
   let ox=BW/2-hx;if(o.mirror)ox=-ox;const oy=H/2;
   const proj=(x,y,z)=>{const k=PERSP/(PERSP-z);return [cx+ox+(x-ox)*k,cy+oy+(y-oy)*k]};
   /* 거울 모드에서는 그림이 다시 뒤집혀 보이지 않도록 미리 좌우 반전한 그림을 씀 */
   const flipImg=im=>{if(!im||!o.mirror)return im;const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(im,0,0);return c};
-  const F=flipImg(fi),Bk=flipImg(bi);
+  const filt=im=>{if(!im||!canFil)return im;const c=document.createElement('canvas');c.width=iw(im);c.height=ih(im);const x=c.getContext('2d');x.filter=FIL;x.drawImage(im,0,0);return c};
   const iw=im=>im?(im.naturalWidth||im.width):0,ih=im=>im?(im.naturalHeight||im.height):0;
+  const F=filt(flipImg(fi)),Bk=filt(flipImg(bi));
   const PAPER=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#f4ead6';
+  let PAPER_F=PAPER;if(canFil){const c=document.createElement('canvas');c.width=c.height=2;const x=c.getContext('2d');x.filter=FIL;x.fillStyle=PAPER;x.fillRect(0,0,2,2);const d=x.getImageData(0,0,1,1).data;PAPER_F=`rgb(${d[0]},${d[1]},${d[2]})`}
   const xs=[];for(let i=0;i<=CSTRIP;i++)xs.push(i*W/CSTRIP);
-  const NK=document.body.classList.contains('night')?1.9:1;
-  /* 제본선 음영: 왼쪽 쪽 그림(원고에 음영 있음)은 옅게, 오른쪽 쪽 그림은 고정 페이지와 같은 모양으로 */
-  const RP=[[0,.40],[.08,.32],[.15,.25],[.3,.17],[.58,.09],[1,0]];
-  const gutR=x=>{const f=x/(.09*W);if(f>=1)return 0;for(let k=1;k<RP.length;k++)if(f<=RP[k][0]){const [a,va]=RP[k-1],[b,vb]=RP[k];return va+(vb-va)*(f-a)/(b-a)}return 0};
-  const gutL=x=>Math.max(0,.22*(1-x/(.09*W)));
-  const gutF=x=>o.gut?NK*(o.mirror?gutL(x):gutR(x)):0,gutB=x=>o.gut?NK*(o.mirror?gutR(x):gutL(x)):0;
+  /* 제본선 음영: 고정 페이지(.page::after)와 똑같은 모양·진하기 */
+  const prof=P=>x=>{const f=x/(.09*W);if(f>=1)return 0;for(let k=1;k<P.length;k++)if(f<=P[k][0]){const [a,va]=P[k-1],[b,vb]=P[k];return va+(vb-va)*(f-a)/(b-a)}return 0};
+  const gutR=prof(night?[[0,.58],[.3,.36],[1,0]]:[[0,.40],[.08,.32],[.15,.25],[.3,.17],[.58,.09],[1,0]]);
+  const gutL=prof(night?[[0,.62],[.08,.56],[.15,.52],[.3,.45],[.58,.26],[1,0]]:[[0,.22],[1,0]]);
+  const gutF=x=>o.gut?(o.mirror?gutL(x):gutR(x)):0,gutB=x=>o.gut?(o.mirror?gutR(x):gutL(x)):0;
   const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720;
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   /* 띠 조각 하나를 사변형(위·아래 네 꼭짓점)에 맞춰 그림: 가는 띠라 평행사변형 근사로 충분 */
@@ -1019,14 +1022,14 @@ async function curlFlip(book,o){
         const [x0,z0]=P[i],[x1,z1]=P[i+1];
         const a0=proj(x0,0,z0),a1=proj(x1,0,z1),b0=proj(x0,H,z0),b1=proj(x1,H,z1);
         const front=a1[0]>=a0[0];
-        const s=Math.sin(ph[i]*Math.PI/180)*Math.min(1,.35+i/SEG*SEG/CSTRIP);
-        const sh=front?Math.min(.7,.28*s+gutF(xs[i])*lift):Math.min(.7,.22*s+gutB(xs[i])*lift);
-        segs.push({i,z:(z0+z1)/2,a0,a1,b0,b1,front,sh});
+        /* 띠 양 끝의 음영을 따로 계산해 띠 안에서 부드럽게 이어지게(세로줄 방지). 내려앉는 뒷면의 제본선 음영은 줄이지 않음 */
+        const shAt=k=>{const s=Math.sin(ph[Math.min(k,CSTRIP-1)]*Math.PI/180)*Math.min(1,.35+k/CSTRIP);
+          return front?Math.min(.75,.28*s+gutF(xs[k])*lift):Math.min(.75,.22*s+gutB(xs[k]))};
+        segs.push({i,z:(z0+z1)/2,a0,a1,b0,b1,front,s0:shAt(i),s1:shAt(i+1)});
       }
       segs.sort((p,q)=>p.z-q.z);
       ci.setTransform(1,0,0,1,0,0);ci.clearRect(0,0,ci.canvas.width,ci.canvas.height);
-      cs.setTransform(1,0,0,1,0,0);cs.clearRect(0,0,cs.canvas.width,cs.canvas.height);
-      ci.setTransform(dpr,0,0,dpr,0,0);cs.setTransform(dpr,0,0,dpr,0,0);
+      ci.setTransform(dpr,0,0,dpr,0,0);
       for(const g of segs){
         const im=g.front?F:Bk;
         /* 띠 경계 틈을 막으려고 0.6px 넓혀 그림 */
@@ -1041,11 +1044,14 @@ async function curlFlip(book,o){
           const du=u1-u0;
           ci.transform((X[0]-O[0])/du,(X[1]-O[1])/du,(Y[0]-O[0])/H,(Y[1]-O[1])/H,O[0],O[1]);
           const e0=Math.min(1,u0),e1=Math.min(1,W-u1);ci.drawImage(im,(u0-e0)*sw,0,(du+e0+e1)*sw,ih(im),-e0,0,du+e0+e1,H);
-        }else{ci.fillStyle=PAPER;ci.fill()}
+        }else{ci.fillStyle=PAPER_F;ci.fill()}
         ci.restore();
-        /* 음영: 뒤쪽 띠의 음영을 지우고 이 띠 음영을 칠함 */
-        quad(cs,A0,A1,B0);cs.globalCompositeOperation='destination-out';cs.fillStyle='#000';cs.fill();
-        cs.globalCompositeOperation='source-over';if(g.sh>.003){cs.fillStyle=`rgba(0,0,0,${g.sh.toFixed(3)})`;cs.fill()}
+        /* 음영: 그림과 똑같이 0.6px 넓힌 영역에 칠함 → 다음 띠의 불투명한 그림이 겹친 부분을 덮어 이중 음영·틈(세로줄)이 생기지 않음 */
+        if(g.s0>.002||g.s1>.002){
+          const gr=ci.createLinearGradient(g.a0[0],g.a0[1],g.a1[0],g.a1[1]);
+          gr.addColorStop(0,`rgba(0,0,0,${g.s0.toFixed(3)})`);gr.addColorStop(1,`rgba(0,0,0,${g.s1.toFixed(3)})`);
+          quad(ci,A0,A1,B0);ci.fillStyle=gr;ci.fill();
+        }
       }
       if(t<1)requestAnimationFrame(frame);else res();
     }
