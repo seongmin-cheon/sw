@@ -737,6 +737,14 @@ body.night .cface b.nb{background-color:#1d1a16!important}
 .tapguide.no-prev div:first-child,.tapguide.no-next div:last-child{display:none}
 .tapguide.no-prev div:last-child,.tapguide.no-next div:first-child{border:0}
 .tapguide div{font-size:clamp(14px,1.4vw,20px)}
+
+/* 손잡이·메뉴 막대를 아래로(휴대폰·태블릿·좁은 창). 넓은 PC 화면은 오른쪽 세로 그대로 */
+body.ovl main{padding:6px 6px calc(34px + env(safe-area-inset-bottom))}
+.nav-handle{top:auto;bottom:env(safe-area-inset-bottom);border-radius:10px 10px 0 0;border-top:1px solid rgba(216,180,106,.3);border-bottom:0;box-shadow:0 -3px 10px rgba(0,0,0,.4)}
+main.show-ui .nav-handle,main.show-title .nav-handle{transform:translate(-50%,100%)}
+body.ovl .controls{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));transform:translate(-50%,12px)}
+body.ovl main.show-ui .controls{transform:translate(-50%,0)}
+body.touch .controls{width:min(640px,calc(100% - 20px))}
 </style>
 </head>
 <body>
@@ -1115,7 +1123,7 @@ $('hShelf').addEventListener('click',e=>{e.stopPropagation();closeMenu();documen
 $('hFull').addEventListener('click',e=>{e.stopPropagation();$('bFull').click()});
 /* 전체화면을 지원하지 않는 기기(아이폰 등)에서는 전체화면 아이콘 숨김 */
 if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)){$('hFull').style.display='none';$('bFull').style.display='none'}
-const fixArrow=()=>{$('navHandle').firstChild.nodeValue=(!isTouch&&innerWidth>860)?'◂ ':'▾ '};fixArrow();addEventListener('resize',fixArrow);
+const fixArrow=()=>{$('navHandle').firstChild.nodeValue=(!isTouch&&innerWidth>860)?'◂ ':'▴ '};fixArrow();addEventListener('resize',fixArrow);
 /* 메뉴 자동 숨김: 연 뒤 3초간 조작이 없으면 닫힘 (메뉴 위에 마우스·손가락이 있는 동안은 유지) */
 const AUTO_HIDE=3000;let menuHold=false;
 function closeMenu(){clearTimeout(PT.auto);MAIN.classList.remove('show-ui');MAIN.classList.remove('show-title')}
