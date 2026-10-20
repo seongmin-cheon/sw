@@ -134,7 +134,8 @@ body.fs.idle{cursor:none}
 .page.blank{visibility:hidden}
 .page.L::after,.page.R::after{content:"";position:absolute;top:0;bottom:0;width:9%;pointer-events:none}
 .page.L::after{right:0;background:linear-gradient(90deg,transparent,rgba(0,0,0,.22))}
-.page.R::after{left:0;background:linear-gradient(270deg,transparent,rgba(0,0,0,.22))}
+/* 원고 PDF의 왼쪽 쪽에는 제본선 음영이 이미 그려져 있어, 오른쪽 쪽 음영을 같은 모양으로 맞춤 */
+.page.R::after{left:0;background:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.28) 8%,rgba(0,0,0,.23) 15%,rgba(0,0,0,.17) 30%,rgba(0,0,0,.09) 58%,transparent 100%)}
 .book.single .page.R::after{display:none}
 .page.loading{background:var(--paper) repeating-linear-gradient(0deg,transparent 0 22px,rgba(120,90,50,.05) 22px 23px)}
 
@@ -694,8 +695,8 @@ aside::before{opacity:1!important;background:radial-gradient(1px 1px at 20% 12%,
 /* ═════ 밤 독서 모드: 기기가 다크모드면 자동, 메뉴의 달 버튼으로 직접 전환 ═════ */
 body.night .page img,body.night .cface b,body.night .leaf .face img{filter:invert(.9) hue-rotate(180deg) sepia(.25) brightness(.92) contrast(.92)}
 body.night .page,body.night .cface,body.night .cface b,body.night .leaf .face{background-color:#1d1a16}
-body.night .page.L::after{background:linear-gradient(90deg,transparent,rgba(0,0,0,.45))}
-body.night .page.R::after{background:linear-gradient(270deg,transparent,rgba(0,0,0,.45))}
+body.night .page.L::after{background:linear-gradient(270deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.56) 8%,rgba(0,0,0,.52) 15%,rgba(0,0,0,.45) 30%,rgba(0,0,0,.26) 58%,transparent 100%)}
+body.night .page.R::after{background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(0,0,0,.3) 30%,transparent)}
 #bNight.on{color:#fff3cf;background:rgba(216,180,106,.2)}
 #bNight.on svg{fill:currentColor}
 
@@ -992,7 +993,12 @@ async function curlFlip(book,o){
   const iw=im=>im?(im.naturalWidth||im.width):0,ih=im=>im?(im.naturalHeight||im.height):0;
   const PAPER=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()||'#f4ead6';
   const xs=[];for(let i=0;i<=CSTRIP;i++)xs.push(i*W/CSTRIP);
-  const gut=x=>o.gut?Math.max(0,.22*(1-x/(.09*W))):0;
+  const NK=document.body.classList.contains('night')?1.9:1;
+  /* 제본선 음영: 왼쪽 쪽 그림(원고에 음영 있음)은 옅게, 오른쪽 쪽 그림은 고정 페이지와 같은 모양으로 */
+  const RP=[[0,.35],[.08,.28],[.15,.23],[.3,.17],[.58,.09],[1,0]];
+  const gutR=x=>{const f=x/(.09*W);if(f>=1)return 0;for(let k=1;k<RP.length;k++)if(f<=RP[k][0]){const [a,va]=RP[k-1],[b,vb]=RP[k];return va+(vb-va)*(f-a)/(b-a)}return 0};
+  const gutL=x=>Math.max(0,.22*(1-x/(.09*W)));
+  const gutF=x=>o.gut?NK*(o.mirror?gutL(x):gutR(x)):0,gutB=x=>o.gut?NK*(o.mirror?gutR(x):gutL(x)):0;
   const D=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip'))||720;
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   /* 띠 조각 하나를 사변형(위·아래 네 꼭짓점)에 맞춰 그림: 가는 띠라 평행사변형 근사로 충분 */
@@ -1014,7 +1020,7 @@ async function curlFlip(book,o){
         const a0=proj(x0,0,z0),a1=proj(x1,0,z1),b0=proj(x0,H,z0),b1=proj(x1,H,z1);
         const front=a1[0]>=a0[0];
         const s=Math.sin(ph[i]*Math.PI/180)*Math.min(1,.35+i/SEG*SEG/CSTRIP);
-        const sh=front?Math.min(.42,.28*s+gut(xs[i])*lift):Math.min(.38,.22*s+gut(xs[i])*lift);
+        const sh=front?Math.min(.7,.28*s+gutF(xs[i])*lift):Math.min(.7,.22*s+gutB(xs[i])*lift);
         segs.push({i,z:(z0+z1)/2,a0,a1,b0,b1,front,sh});
       }
       segs.sort((p,q)=>p.z-q.z);
