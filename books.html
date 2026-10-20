@@ -1032,6 +1032,8 @@ async function curlFlip(book,o){
       ci.setTransform(dpr,0,0,dpr,0,0);
       for(const g of segs){
         const im=g.front?F:Bk;
+        /* 뒷면에 그릴 쪽이 없으면(한 쪽 보기·표지 끝) 빈 종이를 그리지 않고 비워 둠 → 장이 넘어가며 사라짐 */
+        if(!im)continue;
         /* 띠 경계 틈을 막으려고 0.6px 넓혀 그림 */
         const ex=g.a1[0]>=g.a0[0]?.6:-.6;
         const A0=[g.a0[0]-ex,g.a0[1]],A1=[g.a1[0]+ex,g.a1[1]],B0=[g.b0[0]-ex,g.b0[1]];
