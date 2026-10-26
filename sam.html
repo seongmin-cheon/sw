@@ -95,6 +95,10 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .rbx svg{width:16px;height:16px}
 .visits{display:flex;gap:14px;font-size:12px;letter-spacing:.06em;color:var(--muted)}
 .visits b{font-weight:700;color:var(--fg);letter-spacing:0;margin-left:4px;font-variant-numeric:tabular-nums}
+.hvisits{flex:none;display:flex;gap:10px;margin-right:6px;font-size:11px;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+.hvisits b{font-weight:700;color:var(--fg);letter-spacing:0;margin-left:3px;font-variant-numeric:tabular-nums}
+@media (max-width:767px){.hvisits{display:none!important}}
+@media (min-width:768px){.visits{display:none!important}}
 .lecdrop{position:absolute;top:calc(100% + 6px);left:0;min-width:200px;padding:6px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-hi);display:flex;flex-direction:column;gap:2px;animation:lecIn .2s var(--ease);z-index:6}
 .lecdrop[hidden]{display:none}
 .lecdrop a{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;color:var(--fg)}
@@ -274,6 +278,7 @@ footer p{margin:0 0 8px;max-width:760px}
 <body>
 <header>
   <div class="wrap hbar"><nav class="nav" id="nav" aria-label="주요 메뉴"></nav>
+    <span class="hvisits" id="hvisits" hidden aria-label="방문자 수"><span>TODAY <b id="hvToday">-</b></span><span>TOTAL <b id="hvTotal">-</b></span></span>
     <button type="button" class="theme" id="themeBtn" aria-label="다크 모드로 바꾸기">
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
@@ -424,14 +429,14 @@ $("nav").innerHTML=`<a class="brand" href="#" aria-current="page">CHEONVERSE</a>
   $("ribbonX").addEventListener("click",()=>{r.hidden=true;try{localStorage.setItem(K,"1")}catch(e){}});
 })();
 
-/* 방문자 수 (투데이·누적): 무료 카운터 Tally API, 같은 IP는 한 번만 셈. 실패하면 조용히 숨김 */
+/* 방문자 수 (투데이·누적) — 데스크톱은 상단 다크모드 버튼 옆, 모바일은 맨 아래: 무료 카운터 Tally API, 같은 IP는 한 번만 셈. 실패하면 조용히 숨김 */
 (function(){
   const NS="https://tally.yuki.sh/hits/seongmin-cheon-cheonverse/";
   const day=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul"}).format(new Date()); // 2026-10-26 (한국 날짜)
   const get=k=>fetch(NS+k+".json",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject());
   const fmt=n=>Number(n||0).toLocaleString("ko-KR");
   Promise.all([get("total"),get("day-"+day)]).then(([t,d])=>{
-    $("vTotal").textContent=fmt(t.visitor);$("vToday").textContent=fmt(d.visitor);$("visits").hidden=false;
+    ["vTotal","hvTotal"].forEach(id=>$(id).textContent=fmt(t.visitor));["vToday","hvToday"].forEach(id=>$(id).textContent=fmt(d.visitor));$("visits").hidden=false;$("hvisits").hidden=false;
   }).catch(()=>{});
 })();
 
