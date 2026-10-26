@@ -119,7 +119,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .stars{position:absolute;inset:0;pointer-events:none;opacity:.45;background-image:radial-gradient(1px 1px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 28% 68%,#cfd8ff,transparent),radial-gradient(1px 1px at 44% 12%,#fff,transparent),radial-gradient(1px 1px at 66% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 80% 28%,#ffe7b8,transparent),radial-gradient(1px 1px at 91% 62%,#fff,transparent),radial-gradient(1px 1px at 6% 84%,#fff,transparent)}
 .orbit{position:absolute;left:50%;top:40%;width:min(860px,140vw);height:min(250px,44vw);transform:translate(-50%,-50%) rotate(-7deg);border:1px solid rgba(201,164,92,.2);border-radius:50%;pointer-events:none}
 .orbit i{position:absolute;inset:0;border-radius:50%;animation:orb 48s linear infinite}
-.orbit i::before{content:"";position:absolute;left:50%;top:-3px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#ffe7b8;box-shadow:0 0 10px 3px rgba(255,214,140,.5)}
+
 @keyframes orb{to{transform:rotate(360deg)}}
 .hero .wrap{position:relative}
 .hero .hello{margin:0 0 14px;font-size:clamp(15px,1.6vw,17px);font-weight:600;color:var(--gold);letter-spacing:.02em}
@@ -245,6 +245,32 @@ footer p{margin:0 0 8px;max-width:760px}
 @media (max-width:480px){:root{--sec:56px;--gap:16px}.card{height:460px}.card .media{height:54%}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.orbit i{animation:none}.card:hover{transform:none}}
 
+
+/* ===== 메인 배너 우주: 은하수 · 반짝이는 별 · 타원 궤도를 실제로 따라 도는 행성 4개 ===== */
+.milky{position:absolute;left:-20%;top:4%;width:140%;height:46%;transform:rotate(-16deg);pointer-events:none;opacity:.5;filter:blur(18px);
+  background:radial-gradient(ellipse 50% 32% at 50% 50%,rgba(200,190,255,.22),transparent 70%),radial-gradient(ellipse 30% 18% at 38% 46%,rgba(255,230,200,.16),transparent 70%),radial-gradient(ellipse 26% 16% at 64% 54%,rgba(170,200,255,.16),transparent 70%)}
+.twinkles{position:absolute;inset:0;pointer-events:none}
+.twinkles i{position:absolute;border-radius:50%;background:#fff;opacity:.2;animation:twk var(--d,4s) ease-in-out infinite;animation-delay:var(--l,0s)}
+.twinkles i.sp{border-radius:0;background:#fff6dc;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 3px rgba(255,240,200,.9))}
+@keyframes twk{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+/* 궤도 크기: --W 가로, --H 세로 (행성 이동은 아래 스크립트가 타원 공식으로 계산) */
+.orbit{--W:min(860px,140vw);--H:min(250px,44vw);--a:calc(var(--W)/2);--b:calc(var(--H)/2);--t:24s;--s:0s;width:var(--W);height:var(--H)}
+.orbit.o2{--W:min(1180px,190vw);--H:min(360px,64vw);--t:40s;--s:-17s;border-color:rgba(160,180,255,.13)}
+.orbit.o3{--W:min(560px,96vw);--H:min(160px,28vw);--t:13s;--s:-5s;border-color:rgba(255,160,130,.14)}
+.orbit.o4{--W:min(1520px,250vw);--H:min(470px,84vw);--t:60s;--s:-41s;border-color:rgba(201,164,92,.09)}
+.orbit i{position:absolute;inset:auto;left:50%;top:50%;width:0;height:0;border-radius:0;animation:none;will-change:transform}
+.orbit i::before{content:"";position:absolute;left:-8px;top:-8px;width:16px;height:16px;margin:0;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffaf0,#ffe1a0 45%,#f0b04a 100%);box-shadow:0 0 12px 4px rgba(255,214,140,.5),0 0 34px 10px rgba(255,190,90,.18)}
+.orbit.o2 i::before{left:-5px;top:-5px;width:10px;height:10px;background:radial-gradient(circle at 35% 35%,#e8f1ff,#7fa8ff 60%,#3d5fc4);box-shadow:0 0 10px 2px rgba(127,168,255,.45)}
+.orbit.o3 i::before{left:-3.5px;top:-3.5px;width:7px;height:7px;background:radial-gradient(circle at 35% 35%,#ffe2d6,#ff8f6b 60%,#b84a2f);box-shadow:0 0 8px 2px rgba(255,143,107,.45)}
+.orbit.o4 i::before{left:-6px;top:-6px;width:12px;height:12px;background:radial-gradient(circle at 35% 35%,#f3ecff,#b9a2ff 60%,#6a4fd0);box-shadow:0 0 12px 3px rgba(185,162,255,.4)}
+.orbit.o4 i::after{content:"";position:absolute;left:-13px;top:-4px;width:26px;height:8px;border-radius:50%;border:1.5px solid rgba(220,205,255,.55);transform:rotate(-18deg)}
+.meteors{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.meteors i{position:absolute;height:2px;border-radius:2px;transform-origin:right center;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,240,210,.55) 70%,#fff);filter:drop-shadow(0 0 4px rgba(255,235,200,.8));
+  animation:met var(--md,1.1s) cubic-bezier(.3,.2,.6,1) forwards}
+.meteors i::after{content:"";position:absolute;right:-2px;top:-2px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 3px rgba(255,240,210,.8)}
+@keyframes met{0%{opacity:0;transform:rotate(var(--ma)) translateX(0) scaleX(.3)}12%{opacity:1}70%{opacity:1;transform:rotate(var(--ma)) translateX(var(--mx)) scaleX(1)}100%{opacity:0;transform:rotate(var(--ma)) translateX(calc(var(--mx) * 1.25)) scaleX(.6)}}
+@media (prefers-reduced-motion:reduce){.meteors{display:none}.twinkles i{animation:none;opacity:.6}.orbit i{animation:none}}
 /* ===== 카드 색상: 라이트 모드는 밝은 카드, 다크 모드일 때만 검정 카드 ===== */
 .card.fin{--cbg:#eef3fb;--cfg:#0b1830;--csub:#4a5a75;--clab:#2f6fe0}
 .card.ob{--cbg:#f1eefc;--cfg:#1b1631;--csub:#5a5374;--clab:#6c5ce7}
@@ -288,7 +314,13 @@ footer p{margin:0 0 8px;max-width:760px}
 
 <section class="hero" aria-labelledby="heroH">
   <div class="stars" aria-hidden="true"></div>
+  <div class="milky" aria-hidden="true"></div>
+  <div class="twinkles" id="twinkles" aria-hidden="true"></div>
+  <div class="meteors" id="meteors" aria-hidden="true"></div>
+  <div class="orbit o4" aria-hidden="true"><i></i></div>
+  <div class="orbit o2" aria-hidden="true"><i></i></div>
   <div class="orbit" aria-hidden="true"><i></i></div>
+  <div class="orbit o3" aria-hidden="true"><i></i></div>
   <div class="wrap">
     <p class="hello">반가워요.</p>
     <h1 id="heroH">CHEONVERSE<b>.</b></h1>
@@ -439,6 +471,40 @@ $("nav").innerHTML=`<a class="brand" href="#" aria-current="page">CHEONVERSE</a>
     ["vTotal","hvTotal"].forEach(id=>$(id).textContent=fmt(t.visitor));["vToday","hvToday"].forEach(id=>$(id).textContent=fmt(d.visitor));$("visits").hidden=false;$("hvisits").hidden=false;
   }).catch(()=>{});
 })();
+
+/* 메인 배너 반짝이는 별 */
+(function(){const box=$("twinkles");if(!box)return;let h="";
+  for(let k=0;k<70;k++){const z=(Math.random()*1.8+.8).toFixed(1);
+    h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${z}px;height:${z}px;--d:${(2.5+Math.random()*4).toFixed(1)}s;--l:-${(Math.random()*6).toFixed(1)}s"></i>`}
+  for(let k=0;k<9;k++){const z=(Math.random()*6+7).toFixed(0);
+    h+=`<i class="sp" style="left:${(4+Math.random()*92).toFixed(1)}%;top:${(4+Math.random()*80).toFixed(1)}%;width:${z}px;height:${z}px;--d:${(3+Math.random()*3).toFixed(1)}s;--l:-${(Math.random()*5).toFixed(1)}s"></i>`}
+  box.innerHTML=h;})();
+
+/* 행성: 각 궤도(타원)를 정확히 따라 돌기 — x=a·cos, y=b·sin */
+(function(){const P=[...document.querySelectorAll(".hero .orbit")].map((o,k)=>({o,i:o.querySelector("i"),
+    T:[48,26,80,120][["","o3","o2","o4"].indexOf(o.classList[1]||"")]||48,ph:[2.2,0.8,4.1,5.3][k]||0}));
+  if(!P.length)return;
+  const still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  let sz=[];const measure=()=>{sz=P.map(p=>[p.o.clientWidth/2,p.o.clientHeight/2])};measure();addEventListener("resize",measure);
+  const draw=t=>{P.forEach((p,k)=>{const th=p.ph+(still?0:t/1000/p.T*2*Math.PI);const [a,b]=sz[k];
+      p.i.style.transform=`translate(${(a*Math.cos(th)).toFixed(1)}px,${(b*Math.sin(th)).toFixed(1)}px)`});
+    if(!still)requestAnimationFrame(draw)};
+  requestAnimationFrame(draw);})();
+
+/* 별똥별: 5~12초 간격, 위치·방향(좌/우)·기울기·길이 랜덤, 가끔 연달아 두 개 */
+(function(){const box=$("meteors");if(!box||matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  const shoot=()=>{const i=document.createElement("i"),W=box.clientWidth,H=box.clientHeight;
+    const len=70+Math.random()*110,toLeft=Math.random()<.5,tilt=15+Math.random()*35;   // 좌·우 방향 랜덤, 기울기 15~50도
+    const ang=toLeft?180-tilt:tilt;
+    const x=toLeft?W*(.35+Math.random()*.75):W*(-.1+Math.random()*.75);               // 화면 전체 폭에서 출발
+    const y=H*(-.1+Math.random()*.7);                                                    // 위쪽~중간 아래까지
+    i.style.width=len+"px";i.style.left=x+"px";i.style.top=y+"px";
+    i.style.setProperty("--ma",ang+"deg");i.style.setProperty("--mx",(W*.25+Math.random()*W*.3)+"px");
+    i.style.setProperty("--md",(.8+Math.random()*.6).toFixed(2)+"s");
+    box.appendChild(i);i.addEventListener("animationend",()=>i.remove())};
+  const loop=()=>{if(!document.hidden){shoot();if(Math.random()<.25)setTimeout(shoot,350+Math.random()*500)}
+    setTimeout(loop,5000+Math.random()*7000)};
+  setTimeout(loop,2500);})();
 
 /* 바로가기 아이콘 */
 const Q=[
