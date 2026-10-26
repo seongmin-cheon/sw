@@ -10,7 +10,7 @@
 :root{--D:#FF5A4E;--I:#FFB300;--S:#1FC27A;--C:#3D7BFF;--bg:#FFFBF6;--card:#fff;--tx:#111318;--sub:#4E5461;--ln:#ECEEF3;--ink:#14161C;--grad:linear-gradient(100deg,#FF6B5A,#FF9F45 55%,#FFC23A)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;letter-spacing:-.2px;-webkit-tap-highlight-color:transparent;min-height:100vh;overflow-x:hidden}
+body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;letter-spacing:-.2px;word-break:keep-all;-webkit-tap-highlight-color:transparent;min-height:100vh;overflow-x:hidden}
 body:before,body:after{content:"";position:fixed;z-index:-1;width:420px;height:420px;border-radius:50%;filter:blur(90px);opacity:.3;pointer-events:none}
 body:before{background:radial-gradient(var(--D),var(--I));top:-160px;right:-140px}
 body:after{background:radial-gradient(var(--C),var(--S));bottom:-180px;left:-160px}
@@ -95,13 +95,13 @@ svg{display:block;margin:14px auto 6px;max-width:100%}
 .matrix .h{background:none;font-weight:900;font-size:15px}
 .acts{margin-top:12px}
 .rR .chips{justify-content:flex-start}
-.cv-btn{position:fixed;top:max(18px,2.2vw);left:max(18px,2.5vw);z-index:20;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 85%,#2a2114,#000 75%);border:1.5px solid rgba(201,164,92,.6);box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 16px rgba(201,164,92,.3),inset 0 0 0 3px rgba(0,0,0,.8),inset 0 0 0 4px rgba(201,164,92,.25);opacity:.85;transition:opacity .3s,transform .25s,box-shadow .3s;text-decoration:none}
+.cv-btn{position:fixed;top:max(28px,2.2vw);right:max(18px,2.5vw);z-index:20;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 85%,#2a2114,#000 75%);border:1.5px solid rgba(201,164,92,.6);box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 16px rgba(201,164,92,.3),inset 0 0 0 3px rgba(0,0,0,.8),inset 0 0 0 4px rgba(201,164,92,.25);opacity:.85;transition:opacity .3s,transform .25s,box-shadow .3s;text-decoration:none}
 .cv-btn:hover{opacity:1;transform:scale(1.08);box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 24px rgba(255,214,140,.55),inset 0 0 0 3px rgba(0,0,0,.8),inset 0 0 0 4px rgba(201,164,92,.4)}
 .cv-ic{width:40px;height:40px;margin:0!important;display:block}
-.fab-lb{position:absolute;top:50%;left:calc(100% + 10px);white-space:nowrap;font:700 13px Pretendard,"Noto Sans KR",sans-serif;color:#fff3cf;padding:6px 12px;border-radius:14px;background:rgba(8,12,34,.9);border:1px solid rgba(217,189,127,.5);box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;pointer-events:none;transform:translate(-6px,-50%);transition:opacity .2s,transform .2s}
+.fab-lb{position:absolute;top:50%;right:calc(100% + 10px);white-space:nowrap;font:700 13px Pretendard,"Noto Sans KR",sans-serif;color:#fff3cf;padding:6px 12px;border-radius:14px;background:rgba(8,12,34,.9);border:1px solid rgba(217,189,127,.5);box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;pointer-events:none;transform:translate(6px,-50%);transition:opacity .2s,transform .2s}
 .cv-btn:hover .fab-lb{opacity:1;transform:translate(0,-50%)}
-header{padding-top:52px}
-@media (max-width:640px){.cv-btn{width:42px;height:42px;top:12px;left:12px}.cv-ic{width:32px;height:32px}.fab-lb{display:none}}
+header{padding-top:0}
+@media (max-width:640px){.cv-btn{width:42px;height:42px;top:22px;right:16px}.cv-ic{width:32px;height:32px}.fab-lb{display:none}}
 .warm{word-break:keep-all;font-size:15.5px;line-height:1.8;color:#2B2F38;background:#FFFDFB;border:1px solid rgba(20,22,28,.06);border-radius:18px;padding:18px 18px;margin-bottom:14px}
 .warm:before{content:"“";display:block;font-size:34px;line-height:.6;font-weight:900;margin-bottom:4px;color:var(--qc,#FF9F45)}
 .one{margin-top:16px;border-radius:20px;padding:20px 18px;text-align:center}
@@ -110,11 +110,12 @@ header{padding-top:52px}
 @media (min-width:900px){
  body:before,body:after{width:720px;height:720px;filter:blur(120px)}
  .wrap{max-width:1120px;padding:40px 40px 64px}
- header{padding:72px 0 8px}
+ header{padding:8px 0 8px;text-align:center}
+ .eyebrow{justify-content:center}
  .rL svg{width:340px;height:340px}
  header h1{font-size:52px;letter-spacing:-2px}
  header p{font-size:16px}
- nav{max-width:440px;margin:28px 0 28px}
+ nav{max-width:440px;margin:28px auto 32px}
  #vStart,#vQ{max-width:640px;margin:0 auto;padding:40px 44px}
  .qtitle{font-size:28px;margin:28px 0 20px}
  .opt{padding:22px 22px;font-size:17.5px}
