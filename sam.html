@@ -81,6 +81,25 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 :root[data-eff="dark"] .theme .moon{display:none}
 .nav a.brand{font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--fg);padding-left:0}
 .nav a.brand[aria-current]{color:var(--fg)}
+.nav .lecbtn{flex:none;display:inline-flex;align-items:center;gap:3px;height:44px;padding:0 8px 0 10px;border:0;background:none;font:inherit;font-size:13px;color:var(--navfg);border-radius:10px;cursor:pointer;transition:color .2s,background .2s}
+.nav .lecbtn:hover{color:var(--fg);background:var(--hover)}
+.nav .lecbtn svg{width:12px;height:12px;transition:transform .25s var(--ease)}
+.nav .lecbtn[aria-expanded="true"]{color:var(--fg);font-weight:600}
+.nav .lecbtn svg{transform:rotate(90deg)}
+.nav .lecbtn[aria-expanded="true"] svg{transform:rotate(-90deg)}
+@media (max-width:420px){.nav{gap:0;-webkit-mask-image:none;mask-image:none}.nav a.brand{font-size:14px;letter-spacing:0;padding-right:8px}.nav .sep{display:none}.nav .lecbtn{padding:0 4px 0 7px;font-size:12.5px;gap:1px}.hbar{gap:2px}}
+.ribbon{position:relative;padding-inline:40px}
+.rbx{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.rbx:hover{background:var(--hover);color:var(--fg)}
+.rbx:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.rbx svg{width:16px;height:16px}
+.lecdrop{position:absolute;top:calc(100% + 6px);left:0;min-width:200px;padding:6px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-hi);display:flex;flex-direction:column;gap:2px;animation:lecIn .2s var(--ease);z-index:6}
+.lecdrop[hidden]{display:none}
+.lecdrop a{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;color:var(--fg)}
+.lecdrop a:hover,.lecdrop a:focus-visible{background:var(--hover)}
+.lecdrop b{font-size:14px;font-weight:600}
+.lecdrop small{font-size:12px;color:var(--muted)}
+@keyframes lecIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .nav .sep{flex:none;width:1px;height:14px;background:var(--line);margin:0 6px}
 
 /* ── 안내 띠 */
@@ -258,7 +277,7 @@ footer p{margin:0 0 8px;max-width:760px}
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
     </button></div>
 </header>
-<div class="ribbon"><div class="wrap">시험대비 정리자료는 오류가 있을 수 있습니다. 교수님 강의자료와 함께 보세요. <button type="button" class="tlink" id="openWarn">이용약관 보기 ›</button></div></div>
+<div class="ribbon" id="ribbon"><div class="wrap">시험대비 정리자료는 오류가 있을 수 있습니다. 교수님 강의자료와 함께 보세요. <button type="button" class="tlink" id="openWarn">이용약관 보기 ›</button></div><button type="button" class="rbx" id="ribbonX" aria-label="안내 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 
 <section class="hero" aria-labelledby="heroH">
   <div class="stars" aria-hidden="true"></div>
@@ -271,7 +290,7 @@ footer p{margin:0 0 8px;max-width:760px}
     <nav class="doors" aria-label="세계 둘러보기">
       <a href="#lec"><em class="badge hot">HOT</em><b>Learning</b><small>요약노트</small></a>
       <a href="https://seongmin-cheon.github.io/sw/books.html"><em class="badge new">NEW</em><b>Library</b><small>비밀의 서고</small></a>
-      <a href="#fun"><b>Play</b><small>게임 · 영상</small></a>
+      <a href="#fun"><b>Play</b><small>검사 · 놀이 · 영상</small></a>
       <a href="#etc"><b>Life</b><small>건강 · 학교</small></a>
     </nav>
     <button type="button" class="tlink terms" id="openWarn2">이용약관 보기 ›</button>
@@ -295,9 +314,9 @@ footer p{margin:0 0 8px;max-width:760px}
     <nav class="quick" id="quick" aria-label="바로가기 아이콘"></nav>
   </div>
 
+  <section class="row" id="fun" aria-labelledby="funH"><div class="wrap row-h"><h2 class="sec-h" id="funH">읽을거리와 놀거리. <span>쉬는 시간에.</span></h2></div><div class="rail" id="r-fun"></div></section>
   <section class="row" id="etc" aria-labelledby="etcH"><div class="wrap row-h"><h2 class="sec-h" id="etcH">함께 쓰면 좋은 곳. <span>건강하고 현명하게.</span></h2></div><div class="rail" id="r-etc"></div></section>
   <section class="row" id="lec" aria-labelledby="lecH"><div class="wrap row-h"><h2 class="sec-h" id="lecH">천팀장의 요약노트. <span>정답보다는 길잡이로.</span></h2></div><div class="rail" id="r-lec"></div></section>
-  <section class="row" id="fun" aria-labelledby="funH"><div class="wrap row-h"><h2 class="sec-h" id="funH">읽을거리와 놀거리. <span>쉬는 시간에.</span></h2></div><div class="rail" id="r-fun"></div></section>
 
   <div class="wrap">
     <footer>
@@ -362,11 +381,45 @@ const isExt=u=>/^https?:\/\//.test(u)&&!u.startsWith("https://seongmin-cheon.git
 const rel=u=>isExt(u)?' rel="noopener noreferrer"':"";
 const badge=b=>b?`<em class="badge ${b}">${b.toUpperCase()}</em>`:"";
 
-/* 상단 메뉴 */
+/* 상단 메뉴: 아래 카드 줄과 같은 순서(Play › Life › Learning), 누르면 아래로 펼침 */
+const MENUS=[
+  {id:"play",label:"Play",items:[
+    {n:SITES.disc.name,u:SITES.disc.url,s:"성향 검사"},
+    {n:SITES.novel.name,u:SITES.novel.url,s:"웹 도서관"},
+    {n:SITES.yt.name,u:SITES.yt.url,s:"유튜브 채널"},
+    {n:SITES.rpg.name,u:SITES.rpg.url,s:"웹 게임"}]},
+  {id:"life",label:"Life",items:[
+    {n:SITES.med.name,u:SITES.med.url,s:"개인 맞춤형 건강기능식품"},
+    {n:SITES.ajou.name,u:SITES.ajou.url,s:"학사 · 성적 · 공지"}]},
+  {id:"lec",label:"Learning",items:LEC.map(d=>({n:d.name,u:d.url,s:d.prof}))},
+];
+const ARW=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`;
 $("nav").innerHTML=`<a class="brand" href="#" aria-current="page">CHEONVERSE</a><span class="sep" aria-hidden="true"></span>`
- +LEC.map(d=>`<a href="${esc(d.url)}">${esc(d.name)}</a>`).join("")
- +`<span class="sep" aria-hidden="true"></span>`
- +["med","novel","disc","yt","rpg","ajou"].map(k=>`<a href="${esc(SITES[k].url)}"${rel(SITES[k].url)}>${esc(SITES[k].name)}</a>`).join("");
+ +MENUS.map(m=>`<button type="button" class="lecbtn" data-menu="${m.id}" aria-expanded="false" aria-controls="navDrop">${esc(m.label)}${ARW}</button>`).join("");
+
+/* 펼침 메뉴: 상단바가 가로 스크롤이라 헤더에 따로 띄우고 버튼 아래에 붙임 */
+(function(){
+  const hdr=document.querySelector("header"),btns=[...document.querySelectorAll("#nav .lecbtn")];
+  const dd=document.createElement("div");dd.className="lecdrop";dd.id="navDrop";dd.hidden=true;hdr.appendChild(dd);
+  let cur=null;
+  const place=()=>{if(!cur)return;const r=cur.getBoundingClientRect(),h=hdr.getBoundingClientRect();
+    let x=r.left-h.left;x=Math.max(8,Math.min(x,h.width-dd.offsetWidth-8));dd.style.left=x+"px"};
+  const close=()=>{dd.hidden=true;btns.forEach(b=>b.setAttribute("aria-expanded","false"));cur=null};
+  const open=b=>{const m=MENUS.find(x=>x.id===b.dataset.menu);
+    dd.innerHTML=m.items.map(i=>`<a href="${esc(i.u)}"${rel(i.u)}><b>${esc(i.n)}</b><small>${esc(i.s)}</small></a>`).join("");
+    btns.forEach(x=>x.setAttribute("aria-expanded",x===b?"true":"false"));cur=b;dd.hidden=false;
+    dd.style.animation="none";dd.offsetWidth;dd.style.animation="";place()};
+  btns.forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();cur===b?close():open(b)}));
+  document.addEventListener("click",e=>{if(!dd.hidden&&!dd.contains(e.target))close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&cur){const b=cur;close();b.focus()}});
+  $("nav").addEventListener("scroll",place,{passive:true});addEventListener("resize",place);
+})();
+
+/* 상단 안내띠 닫기 (오늘 하루 유지) */
+(function(){const r=$("ribbon"),K="cv-ribbon-"+new Date().toDateString();
+  try{if(localStorage.getItem(K)==="1")r.hidden=true}catch(e){}
+  $("ribbonX").addEventListener("click",()=>{r.hidden=true;try{localStorage.setItem(K,"1")}catch(e){}});
+})();
 
 /* 바로가기 아이콘 */
 const Q=[
