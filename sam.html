@@ -93,6 +93,8 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .rbx:hover{background:var(--hover);color:var(--fg)}
 .rbx:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .rbx svg{width:16px;height:16px}
+.visits{display:flex;gap:14px;font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.visits b{font-weight:700;color:var(--fg);letter-spacing:0;margin-left:4px;font-variant-numeric:tabular-nums}
 .lecdrop{position:absolute;top:calc(100% + 6px);left:0;min-width:200px;padding:6px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-hi);display:flex;flex-direction:column;gap:2px;animation:lecIn .2s var(--ease);z-index:6}
 .lecdrop[hidden]{display:none}
 .lecdrop a{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;color:var(--fg)}
@@ -324,6 +326,7 @@ footer p{margin:0 0 8px;max-width:760px}
       <p>천팀장과 가까운 분들을 위해 무료로 나눕니다. 과도한 벼락치기는 건강을 해칩니다.</p>
       <p>「창세비록」은 창세기전 시리즈를 바탕으로 한 비상업적 팬 창작물입니다. 판매하지 않으며, 원작의 모든 권리는 원저작권자에게 있습니다.</p>
       <p>© CHEONVERSE · 문의: 천팀장에게 편하게 연락 주세요</p>
+      <p class="visits" id="visits" hidden><span>TODAY <b id="vToday">-</b></span><span>TOTAL <b id="vTotal">-</b></span></p>
     </footer>
   </div>
 </main>
@@ -419,6 +422,17 @@ $("nav").innerHTML=`<a class="brand" href="#" aria-current="page">CHEONVERSE</a>
 (function(){const r=$("ribbon"),K="cv-ribbon-"+new Date().toDateString();
   try{if(localStorage.getItem(K)==="1")r.hidden=true}catch(e){}
   $("ribbonX").addEventListener("click",()=>{r.hidden=true;try{localStorage.setItem(K,"1")}catch(e){}});
+})();
+
+/* 방문자 수 (투데이·누적): 무료 카운터 Tally API, 같은 IP는 한 번만 셈. 실패하면 조용히 숨김 */
+(function(){
+  const NS="https://tally.yuki.sh/hits/seongmin-cheon-cheonverse/";
+  const day=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul"}).format(new Date()); // 2026-10-26 (한국 날짜)
+  const get=k=>fetch(NS+k+".json",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject());
+  const fmt=n=>Number(n||0).toLocaleString("ko-KR");
+  Promise.all([get("total"),get("day-"+day)]).then(([t,d])=>{
+    $("vTotal").textContent=fmt(t.visitor);$("vToday").textContent=fmt(d.visitor);$("visits").hidden=false;
+  }).catch(()=>{});
 })();
 
 /* 바로가기 아이콘 */
