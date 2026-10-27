@@ -19,13 +19,11 @@
         {
           "no": 1,
           "title": "실버 애로우와 제국의 그림자",
-          "spine": "실버 애로우",
-          "cover": "books/vol01_cover.jpg",
+          "added": "2026-10-27",
+          "cover": "books/genesis_v01_cover.jpg",
           "files": [
-            "books/vol01_a.pdf",
-            "books/vol01_b.pdf"
-          ],
-          "added": "2026-10-18"
+            "books/genesis_v01.pdf"
+          ]
         },
         {
           "no": 2,
